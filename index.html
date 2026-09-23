@@ -98,6 +98,7 @@
     .task-info {
       color: #475569;
       margin-top: 7px;
+      line-height: 1.8;
     }
 
     .task-buttons {
@@ -141,9 +142,21 @@
       font-weight: bold;
     }
 
+    footer {
+      text-align: center;
+      margin: 25px 0;
+      padding: 15px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
     @media (max-width: 600px) {
       .task-buttons {
         flex-direction: column;
+      }
+
+      .timer {
+        font-size: 38px;
       }
     }
   </style>
@@ -153,7 +166,7 @@
 
   <div class="container">
 
-    <!-- تسجيل الدخول باسم مستخدم -->
+    <!-- تسجيل الدخول -->
     <div class="card" id="loginBox">
       <h1>📚 منظم وقت الدراسة</h1>
 
@@ -169,7 +182,7 @@
       <button onclick="login()">دخول</button>
     </div>
 
-    <!-- محتوى الموقع -->
+    <!-- التطبيق -->
     <div id="app" style="display:none;">
 
       <div class="card">
@@ -180,16 +193,19 @@
         </button>
       </div>
 
+      <!-- إضافة مهمة -->
       <div class="card">
         <h2>➕ إضافة مهمة دراسية</h2>
 
         <label>اسم المادة أو المهمة</label>
+
         <input
           id="taskName"
           placeholder="مثلاً: رياضيات - حل الواجب"
         >
 
         <label>نوع المهمة</label>
+
         <select id="taskType">
           <option>مذاكرة</option>
           <option>واجب</option>
@@ -199,6 +215,7 @@
         </select>
 
         <label>المدة بالدقائق</label>
+
         <input
           id="taskTime"
           type="number"
@@ -211,6 +228,7 @@
         </button>
       </div>
 
+      <!-- المؤقت -->
       <div class="card">
         <h2>⏱️ المؤقت</h2>
 
@@ -227,15 +245,24 @@
         </button>
       </div>
 
+      <!-- قائمة المهام -->
       <div class="card">
         <h2>📝 مهامي الدراسية</h2>
 
         <div id="tasks">
-          <p class="empty">لم تضف أي مهام حتى الآن</p>
+          <p class="empty">
+            لم تضف أي مهام حتى الآن
+          </p>
         </div>
       </div>
 
     </div>
+
+    <!-- الحقوق -->
+    <footer>
+      Developed by Ammar Al-Haddar
+    </footer>
+
   </div>
 
   <script>
@@ -245,9 +272,10 @@
     let timerInterval = null;
     let remainingSeconds = 0;
 
-    // عند فتح الموقع، تحقق من وجود اسم محفوظ
+    // تشغيل الموقع
     window.onload = function () {
-      const savedUsername = localStorage.getItem("studyUsername");
+      const savedUsername =
+        localStorage.getItem("studyUsername");
 
       if (savedUsername) {
         username = savedUsername;
@@ -255,8 +283,11 @@
       }
     };
 
+    // تسجيل الدخول
     function login() {
-      const input = document.getElementById("usernameInput");
+      const input =
+        document.getElementById("usernameInput");
+
       const name = input.value.trim();
 
       if (!name) {
@@ -274,17 +305,22 @@
       openApp();
     }
 
+    // فتح التطبيق
     function openApp() {
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("app").style.display = "block";
+      document.getElementById("loginBox")
+        .style.display = "none";
 
-      document.getElementById("welcomeText").textContent =
-        "أهلًا " + username + " 👋";
+      document.getElementById("app")
+        .style.display = "block";
+
+      document.getElementById("welcomeText")
+        .textContent = "أهلًا " + username + " 👋";
 
       loadTasks();
       showTasks();
     }
 
+    // تسجيل الخروج
     function logout() {
       saveTasks();
 
@@ -296,17 +332,24 @@
 
       localStorage.removeItem("studyUsername");
 
-      document.getElementById("app").style.display = "none";
-      document.getElementById("loginBox").style.display = "block";
-      document.getElementById("usernameInput").value = "";
+      document.getElementById("app")
+        .style.display = "none";
+
+      document.getElementById("loginBox")
+        .style.display = "block";
+
+      document.getElementById("usernameInput")
+        .value = "";
 
       showTasks();
     }
 
+    // مفتاح التخزين الخاص بكل مستخدم
     function getStorageKey() {
       return "studyTasks_" + username;
     }
 
+    // حفظ المهام
     function saveTasks() {
       if (!username) return;
 
@@ -316,12 +359,14 @@
       );
     }
 
+    // تحميل المهام
     function loadTasks() {
       tasks = JSON.parse(
         localStorage.getItem(getStorageKey())
       ) || [];
     }
 
+    // إضافة مهمة
     function addTask() {
       const name = document
         .getElementById("taskName")
@@ -333,7 +378,8 @@
         .value;
 
       const time = Number(
-        document.getElementById("taskTime").value
+        document.getElementById("taskTime")
+        .value
       );
 
       if (!name || !time || time <= 0) {
@@ -351,12 +397,17 @@
       saveTasks();
       showTasks();
 
-      document.getElementById("taskName").value = "";
-      document.getElementById("taskTime").value = "";
+      document.getElementById("taskName")
+        .value = "";
+
+      document.getElementById("taskTime")
+        .value = "";
     }
 
+    // عرض المهام
     function showTasks() {
-      const box = document.getElementById("tasks");
+      const box =
+        document.getElementById("tasks");
 
       if (!box) return;
 
@@ -371,8 +422,9 @@
 
       box.innerHTML = "";
 
-      tasks.forEach((task, index) => {
-        const div = document.createElement("div");
+      tasks.forEach(function (task, index) {
+        const div =
+          document.createElement("div");
 
         div.className = task.done
           ? "task done"
@@ -390,6 +442,7 @@
           </div>
 
           <div class="task-buttons">
+
             <button
               class="start"
               onclick="startTimer(${index})">
@@ -399,7 +452,9 @@
             <button
               class="finish"
               onclick="finishTask(${index})">
-              ✅ ${task.done ? "تم الإنجاز" : "إنهاء"}
+              ✅ ${task.done
+                ? "تم الإنجاز"
+                : "إنهاء"}
             </button>
 
             <button
@@ -407,6 +462,7 @@
               onclick="deleteTask(${index})">
               🗑️ حذف
             </button>
+
           </div>
         `;
 
@@ -414,14 +470,18 @@
       });
     }
 
+    // تشغيل المؤقت
     function startTimer(index) {
       clearInterval(timerInterval);
 
-      remainingSeconds = tasks[index].time * 60;
+      remainingSeconds =
+        tasks[index].time * 60;
+
       updateTimer();
 
       timerInterval = setInterval(function () {
         remainingSeconds--;
+
         updateTimer();
 
         if (remainingSeconds <= 0) {
@@ -437,32 +497,37 @@
       }, 1000);
     }
 
+    // تحديث الوقت
     function updateTimer() {
-      const minutes = Math.floor(
-        remainingSeconds / 60
-      );
+      const minutes =
+        Math.floor(remainingSeconds / 60);
 
-      const seconds = remainingSeconds % 60;
+      const seconds =
+        remainingSeconds % 60;
 
-      document.getElementById("timer").textContent =
+      document.getElementById("timer")
+        .textContent =
         String(minutes).padStart(2, "0") +
         ":" +
         String(seconds).padStart(2, "0");
     }
 
+    // إيقاف المؤقت
     function pauseTimer() {
       clearInterval(timerInterval);
     }
 
+    // إعادة المؤقت
     function resetTimer() {
       clearInterval(timerInterval);
 
       remainingSeconds = 0;
 
-      document.getElementById("timer").textContent =
-        "00:00";
+      document.getElementById("timer")
+        .textContent = "00:00";
     }
 
+    // إنهاء المهمة
     function finishTask(index) {
       tasks[index].done = true;
 
@@ -470,6 +535,7 @@
       showTasks();
     }
 
+    // حذف المهمة
     function deleteTask(index) {
       const answer = confirm(
         "هل تريد حذف هذه المهمة؟"
