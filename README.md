@@ -31,7 +31,8 @@
       box-shadow: 0 5px 18px #0002;
     }
 
-    h1, h2 {
+    h1,
+    h2 {
       text-align: center;
     }
 
@@ -45,14 +46,17 @@
       font-weight: bold;
     }
 
-    input, select, button {
+    input,
+    select,
+    button {
       width: 100%;
       padding: 12px;
       border-radius: 9px;
       font-size: 15px;
     }
 
-    input, select {
+    input,
+    select {
       border: 1px solid #aaa;
     }
 
@@ -67,6 +71,10 @@
 
     button:hover {
       background: #1d4ed8;
+    }
+
+    .logout {
+      background: #dc2626;
     }
 
     .task {
@@ -126,6 +134,13 @@
       color: #64748b;
     }
 
+    .welcome {
+      text-align: center;
+      color: #2563eb;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
     @media (max-width: 600px) {
       .task-buttons {
         flex-direction: column;
@@ -138,62 +153,188 @@
 
   <div class="container">
 
-    <div class="card">
+    <!-- تسجيل الدخول باسم مستخدم -->
+    <div class="card" id="loginBox">
       <h1>📚 منظم وقت الدراسة</h1>
+
       <p style="text-align:center">
-        أضف المواد والواجبات وحدد الوقت المطلوب لكل مهمة
+        اكتب اسم مستخدم غير حقيقي للبدء
       </p>
 
-      <label>اسم المادة أو المهمة</label>
-      <input id="taskName" placeholder="مثلاً: رياضيات - حل الواجب">
+      <input
+        id="usernameInput"
+        placeholder="مثلاً: Ahmad123"
+      >
 
-      <label>نوع المهمة</label>
-      <select id="taskType">
-        <option>مذاكرة</option>
-        <option>واجب</option>
-        <option>مراجعة</option>
-        <option>اختبار</option>
-        <option>قراءة</option>
-      </select>
-
-      <label>المدة بالدقائق</label>
-      <input id="taskTime" type="number" min="1" placeholder="مثلاً: 30">
-
-      <button onclick="addTask()">➕ إضافة المهمة</button>
+      <button onclick="login()">دخول</button>
     </div>
 
-    <div class="card">
-      <h2>⏱️ المؤقت</h2>
+    <!-- محتوى الموقع -->
+    <div id="app" style="display:none;">
 
-      <div class="timer" id="timer">00:00</div>
+      <div class="card">
+        <div class="welcome" id="welcomeText"></div>
 
-      <button onclick="pauseTimer()">إيقاف مؤقت</button>
-      <button onclick="resetTimer()" class="remove">إلغاء المؤقت</button>
-    </div>
-
-    <div class="card">
-      <h2>📝 مهامي الدراسية</h2>
-      <div id="tasks">
-        <p class="empty">لم تضف أي مهام حتى الآن</p>
+        <button class="logout" onclick="logout()">
+          تسجيل الخروج
+        </button>
       </div>
-    </div>
 
+      <div class="card">
+        <h2>➕ إضافة مهمة دراسية</h2>
+
+        <label>اسم المادة أو المهمة</label>
+        <input
+          id="taskName"
+          placeholder="مثلاً: رياضيات - حل الواجب"
+        >
+
+        <label>نوع المهمة</label>
+        <select id="taskType">
+          <option>مذاكرة</option>
+          <option>واجب</option>
+          <option>مراجعة</option>
+          <option>اختبار</option>
+          <option>قراءة</option>
+        </select>
+
+        <label>المدة بالدقائق</label>
+        <input
+          id="taskTime"
+          type="number"
+          min="1"
+          placeholder="مثلاً: 30"
+        >
+
+        <button onclick="addTask()">
+          إضافة المهمة
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>⏱️ المؤقت</h2>
+
+        <div class="timer" id="timer">
+          00:00
+        </div>
+
+        <button onclick="pauseTimer()">
+          إيقاف مؤقت
+        </button>
+
+        <button class="remove" onclick="resetTimer()">
+          إلغاء المؤقت
+        </button>
+      </div>
+
+      <div class="card">
+        <h2>📝 مهامي الدراسية</h2>
+
+        <div id="tasks">
+          <p class="empty">لم تضف أي مهام حتى الآن</p>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
-    let tasks = JSON.parse(localStorage.getItem("studyTasks")) || [];
+    let username = "";
+    let tasks = [];
+
     let timerInterval = null;
     let remainingSeconds = 0;
-    let currentTaskIndex = null;
+
+    // عند فتح الموقع، تحقق من وجود اسم محفوظ
+    window.onload = function () {
+      const savedUsername = localStorage.getItem("studyUsername");
+
+      if (savedUsername) {
+        username = savedUsername;
+        openApp();
+      }
+    };
+
+    function login() {
+      const input = document.getElementById("usernameInput");
+      const name = input.value.trim();
+
+      if (!name) {
+        alert("اكتب اسم مستخدم أولاً");
+        return;
+      }
+
+      username = name;
+
+      localStorage.setItem(
+        "studyUsername",
+        username
+      );
+
+      openApp();
+    }
+
+    function openApp() {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("app").style.display = "block";
+
+      document.getElementById("welcomeText").textContent =
+        "أهلًا " + username + " 👋";
+
+      loadTasks();
+      showTasks();
+    }
+
+    function logout() {
+      saveTasks();
+
+      username = "";
+      tasks = [];
+
+      clearInterval(timerInterval);
+      resetTimer();
+
+      localStorage.removeItem("studyUsername");
+
+      document.getElementById("app").style.display = "none";
+      document.getElementById("loginBox").style.display = "block";
+      document.getElementById("usernameInput").value = "";
+
+      showTasks();
+    }
+
+    function getStorageKey() {
+      return "studyTasks_" + username;
+    }
 
     function saveTasks() {
-      localStorage.setItem("studyTasks", JSON.stringify(tasks));
+      if (!username) return;
+
+      localStorage.setItem(
+        getStorageKey(),
+        JSON.stringify(tasks)
+      );
+    }
+
+    function loadTasks() {
+      tasks = JSON.parse(
+        localStorage.getItem(getStorageKey())
+      ) || [];
     }
 
     function addTask() {
-      const name = document.getElementById("taskName").value.trim();
-      const type = document.getElementById("taskType").value;
-      const time = Number(document.getElementById("taskTime").value);
+      const name = document
+        .getElementById("taskName")
+        .value
+        .trim();
+
+      const type = document
+        .getElementById("taskType")
+        .value;
+
+      const time = Number(
+        document.getElementById("taskTime").value
+      );
 
       if (!name || !time || time <= 0) {
         alert("اكتب اسم المهمة والمدة المطلوبة");
@@ -217,8 +358,14 @@
     function showTasks() {
       const box = document.getElementById("tasks");
 
+      if (!box) return;
+
       if (tasks.length === 0) {
-        box.innerHTML = `<p class="empty">لم تضف أي مهام حتى الآن</p>`;
+        box.innerHTML = `
+          <p class="empty">
+            لم تضف أي مهام حتى الآن
+          </p>
+        `;
         return;
       }
 
@@ -226,24 +373,38 @@
 
       tasks.forEach((task, index) => {
         const div = document.createElement("div");
-        div.className = task.done ? "task done" : "task";
+
+        div.className = task.done
+          ? "task done"
+          : "task";
 
         div.innerHTML = `
-          <div class="task-title">${task.name}</div>
+          <div class="task-title">
+            ${task.name}
+          </div>
+
           <div class="task-info">
-            النوع: ${task.type} | المدة: ${task.time} دقيقة
+            النوع: ${task.type}
+            <br>
+            المدة: ${task.time} دقيقة
           </div>
 
           <div class="task-buttons">
-            <button class="start" onclick="startTimer(${index})">
+            <button
+              class="start"
+              onclick="startTimer(${index})">
               ▶️ ابدأ
             </button>
 
-            <button class="finish" onclick="finishTask(${index})">
+            <button
+              class="finish"
+              onclick="finishTask(${index})">
               ✅ ${task.done ? "تم الإنجاز" : "إنهاء"}
             </button>
 
-            <button class="remove" onclick="deleteTask(${index})">
+            <button
+              class="remove"
+              onclick="deleteTask(${index})">
               🗑️ حذف
             </button>
           </div>
@@ -256,29 +417,36 @@
     function startTimer(index) {
       clearInterval(timerInterval);
 
-      currentTaskIndex = index;
       remainingSeconds = tasks[index].time * 60;
-
       updateTimer();
 
-      timerInterval = setInterval(() => {
+      timerInterval = setInterval(function () {
         remainingSeconds--;
         updateTimer();
 
         if (remainingSeconds <= 0) {
           clearInterval(timerInterval);
-          alert("🎉 انتهى وقت المهمة: " + tasks[index].name);
+
+          alert(
+            "🎉 انتهى وقت المهمة:\n" +
+            tasks[index].name
+          );
+
           finishTask(index);
         }
       }, 1000);
     }
 
     function updateTimer() {
-      const minutes = Math.floor(remainingSeconds / 60);
+      const minutes = Math.floor(
+        remainingSeconds / 60
+      );
+
       const seconds = remainingSeconds % 60;
 
       document.getElementById("timer").textContent =
-        String(minutes).padStart(2, "0") + ":" +
+        String(minutes).padStart(2, "0") +
+        ":" +
         String(seconds).padStart(2, "0");
     }
 
@@ -288,26 +456,32 @@
 
     function resetTimer() {
       clearInterval(timerInterval);
+
       remainingSeconds = 0;
-      currentTaskIndex = null;
-      document.getElementById("timer").textContent = "00:00";
+
+      document.getElementById("timer").textContent =
+        "00:00";
     }
 
     function finishTask(index) {
       tasks[index].done = true;
+
       saveTasks();
       showTasks();
     }
 
     function deleteTask(index) {
-      if (confirm("هل تريد حذف هذه المهمة؟")) {
-        tasks.splice(index, 1);
-        saveTasks();
-        showTasks();
-      }
-    }
+      const answer = confirm(
+        "هل تريد حذف هذه المهمة؟"
+      );
 
-    showTasks();
+      if (!answer) return;
+
+      tasks.splice(index, 1);
+
+      saveTasks();
+      showTasks();
+    }
   </script>
 
 </body>
