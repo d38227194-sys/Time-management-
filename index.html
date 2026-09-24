@@ -18,7 +18,7 @@
     }
 
     .container {
-      max-width: 850px;
+      max-width: 950px;
       margin: 25px auto;
       padding: 15px;
     }
@@ -31,8 +31,7 @@
       box-shadow: 0 5px 18px #0002;
     }
 
-    h1,
-    h2 {
+    h1, h2 {
       text-align: center;
     }
 
@@ -158,6 +157,158 @@
       font-weight: bold;
     }
 
+    /* =========================
+       الروزنامة
+    ========================= */
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .calendar-header button {
+      width: auto;
+      min-width: 90px;
+      margin: 0;
+    }
+
+    .month-title {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      flex: 1;
+    }
+
+    .weekdays,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-weight: bold;
+      padding: 10px 3px;
+      color: #475569;
+    }
+
+    .calendar-day {
+      min-height: 85px;
+      background: #f8fafc;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: 0.2s;
+    }
+
+    .calendar-day:hover {
+      background: #eff6ff;
+      transform: translateY(-2px);
+    }
+
+    .calendar-day.empty-day {
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+
+    .calendar-day.today {
+      border: 2px solid #2563eb;
+    }
+
+    .day-number {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .day-tasks {
+      margin-top: 7px;
+      font-size: 12px;
+    }
+
+    .calendar-task {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 3px 5px;
+      border-radius: 5px;
+      margin-top: 3px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .calendar-task.done {
+      background: #dcfce7;
+      color: #166534;
+      text-decoration: line-through;
+    }
+
+    .selected-date {
+      text-align: center;
+      background: #eff6ff;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .date-task-form {
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 12px;
+    }
+
+    .date-task-form.active {
+      display: block;
+    }
+
+    .calendar-task-list {
+      margin-top: 15px;
+    }
+
+    .calendar-event {
+      background: white;
+      border: 1px solid #dbeafe;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    .calendar-event-title {
+      font-weight: bold;
+    }
+
+    .calendar-event-info {
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .event-buttons {
+      display: flex;
+      gap: 7px;
+    }
+
+    .event-buttons button {
+      flex: 1;
+    }
+
+    .event-delete {
+      background: #dc2626;
+    }
+
+    .event-done {
+      background: #16a34a;
+    }
+
     footer {
       text-align: center;
       margin: 25px 0;
@@ -167,13 +318,41 @@
     }
 
     @media (max-width: 600px) {
+
       .task-buttons,
-      .timer-buttons {
+      .timer-buttons,
+      .event-buttons {
         flex-direction: column;
       }
 
       .timer {
         font-size: 38px;
+      }
+
+      .calendar-day {
+        min-height: 65px;
+        padding: 5px;
+      }
+
+      .day-number {
+        font-size: 14px;
+      }
+
+      .calendar-task {
+        font-size: 10px;
+      }
+
+      .weekday {
+        font-size: 12px;
+      }
+
+      .calendar-header button {
+        min-width: 70px;
+        padding: 9px;
+      }
+
+      .month-title {
+        font-size: 17px;
       }
     }
   </style>
@@ -181,390 +360,651 @@
 
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <!-- تسجيل الدخول -->
-    <div class="card" id="loginBox">
-      <h1>📚 منظم وقت الدراسة</h1>
+  <!-- تسجيل الدخول -->
+  <div class="card" id="loginBox">
 
-      <p style="text-align:center">
-        اكتب اسم مستخدم غير حقيقي للبدء
-      </p>
+    <h1>📚 منظم وقت الدراسة</h1>
 
-      <input
-        id="usernameInput"
-        placeholder="مثلاً: Ahmad123"
-      >
+    <p style="text-align:center">
+      اكتب اسم مستخدم غير حقيقي للبدء
+    </p>
 
-      <button onclick="login()">دخول</button>
-    </div>
+    <input
+      id="usernameInput"
+      placeholder="مثلاً: Ahmad123"
+    >
 
-    <!-- التطبيق -->
-    <div id="app" style="display:none;">
-
-      <div class="card">
-        <div class="welcome" id="welcomeText"></div>
-
-        <button class="logout" onclick="logout()">
-          تسجيل الخروج
-        </button>
-      </div>
-
-      <!-- إضافة مهمة -->
-      <div class="card">
-        <h2>➕ إضافة مهمة دراسية</h2>
-
-        <label>اسم المادة أو المهمة</label>
-
-        <input
-          id="taskName"
-          placeholder="مثلاً: رياضيات - حل الواجب"
-        >
-
-        <label>نوع المهمة</label>
-
-        <select id="taskType">
-          <option>مذاكرة</option>
-          <option>واجب</option>
-          <option>مراجعة</option>
-          <option>اختبار</option>
-          <option>قراءة</option>
-        </select>
-
-        <label>عدد الساعات</label>
-
-        <input
-          id="taskHours"
-          type="number"
-          min="0"
-          value="0"
-        >
-
-        <label>عدد الدقائق</label>
-
-        <input
-          id="taskMinutes"
-          type="number"
-          min="0"
-          max="59"
-          value="0"
-        >
-
-        <button onclick="addTask()">
-          إضافة المهمة
-        </button>
-      </div>
-
-      <!-- المؤقت -->
-      <div class="card">
-        <h2>⏱️ المؤقت</h2>
-
-        <div class="timer" id="timer">
-          00:00:00
-        </div>
-
-        <div class="timer-buttons">
-          <button class="pause" onclick="pauseTimer()">
-            ⏸️ إيقاف مؤقت
-          </button>
-
-          <button class="resume" onclick="resumeTimer()">
-            ▶️ إعادة تشغيل
-          </button>
-
-          <button class="reset" onclick="resetTimer()">
-            🔄 إعادة ضبط
-          </button>
-        </div>
-      </div>
-
-      <!-- المهام -->
-      <div class="card">
-        <h2>📝 مهامي الدراسية</h2>
-
-        <div id="tasks">
-          <p class="empty">
-            لم تضف أي مهام حتى الآن
-          </p>
-        </div>
-      </div>
-
-    </div>
-
-    <footer>
-      Developed by Ammar Al-Haddar
-    </footer>
+    <button onclick="login()">
+      دخول
+    </button>
 
   </div>
 
-  <script>
-    let username = "";
-    let tasks = [];
 
-    let timerInterval = null;
-    let remainingSeconds = 0;
-    let timerRunning = false;
-    let currentTaskIndex = null;
+  <!-- التطبيق -->
+  <div id="app" style="display:none;">
 
-    // تشغيل الموقع
-    window.onload = function () {
-      const savedUsername =
-        localStorage.getItem("studyUsername");
+    <!-- الترحيب -->
+    <div class="card">
 
-      if (savedUsername) {
-        username = savedUsername;
-        openApp();
-      }
-    };
+      <div class="welcome" id="welcomeText"></div>
 
-    // تسجيل الدخول
-    function login() {
-      const input =
-        document.getElementById("usernameInput");
+      <button class="logout" onclick="logout()">
+        تسجيل الخروج
+      </button>
 
-      const name = input.value.trim();
+    </div>
 
-      if (!name) {
-        alert("اكتب اسم مستخدم أولاً");
-        return;
-      }
 
-      username = name;
+    <!-- =========================
+         الروزنامة
+    ========================== -->
 
-      localStorage.setItem(
-        "studyUsername",
-        username
-      );
+    <div class="card">
+
+      <h2>📅 روزنامة الدراسة</h2>
+
+      <div class="calendar-header">
+
+        <button onclick="previousMonth()">
+          ◀ السابق
+        </button>
+
+        <div
+          class="month-title"
+          id="monthTitle">
+        </div>
+
+        <button onclick="nextMonth()">
+          التالي ▶
+        </button>
+
+      </div>
+
+
+      <!-- أيام الأسبوع -->
+
+      <div class="weekdays">
+
+        <div class="weekday">الأحد</div>
+        <div class="weekday">الإثنين</div>
+        <div class="weekday">الثلاثاء</div>
+        <div class="weekday">الأربعاء</div>
+        <div class="weekday">الخميس</div>
+        <div class="weekday">الجمعة</div>
+        <div class="weekday">السبت</div>
+
+      </div>
+
+
+      <!-- أيام الشهر -->
+
+      <div
+        class="calendar-grid"
+        id="calendarGrid">
+      </div>
+
+
+      <!-- التاريخ المختار -->
+
+      <div
+        class="selected-date"
+        id="selectedDate">
+        اضغط على أي يوم لإضافة شيء
+      </div>
+
+
+      <!-- إضافة حدث -->
+
+      <div
+        class="date-task-form"
+        id="dateTaskForm">
+
+        <label>اسم المهمة أو الموعد</label>
+
+        <input
+          id="calendarTaskName"
+          placeholder="مثلاً: اختبار الرياضيات"
+        >
+
+        <label>الوقت</label>
+
+        <input
+          id="calendarTaskTime"
+          type="time"
+        >
+
+        <label>ملاحظات</label>
+
+        <input
+          id="calendarTaskNote"
+          placeholder="مثلاً: مراجعة الفصل الثالث"
+        >
+
+        <button onclick="addCalendarTask()">
+          ➕ إضافة إلى هذا اليوم
+        </button>
+
+      </div>
+
+
+      <!-- مهام اليوم -->
+
+      <div
+        class="calendar-task-list"
+        id="calendarTaskList">
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         إضافة مهمة
+    ========================== -->
+
+    <div class="card">
+
+      <h2>➕ إضافة مهمة دراسية</h2>
+
+      <label>اسم المادة أو المهمة</label>
+
+      <input
+        id="taskName"
+        placeholder="مثلاً: رياضيات - حل الواجب"
+      >
+
+      <label>نوع المهمة</label>
+
+      <select id="taskType">
+
+        <option>مذاكرة</option>
+        <option>واجب</option>
+        <option>مراجعة</option>
+        <option>اختبار</option>
+        <option>قراءة</option>
+
+      </select>
+
+      <label>عدد الساعات</label>
+
+      <input
+        id="taskHours"
+        type="number"
+        min="0"
+        value="0"
+      >
+
+      <label>عدد الدقائق</label>
+
+      <input
+        id="taskMinutes"
+        type="number"
+        min="0"
+        max="59"
+        value="0"
+      >
+
+      <button onclick="addTask()">
+        إضافة المهمة
+      </button>
+
+    </div>
+
+
+    <!-- =========================
+         المؤقت
+    ========================== -->
+
+    <div class="card">
+
+      <h2>⏱️ المؤقت</h2>
+
+      <div
+        class="timer"
+        id="timer">
+        00:00:00
+      </div>
+
+      <div class="timer-buttons">
+
+        <button
+          class="pause"
+          onclick="pauseTimer()">
+          ⏸️ إيقاف مؤقت
+        </button>
+
+        <button
+          class="resume"
+          onclick="resumeTimer()">
+          ▶️ إعادة تشغيل
+        </button>
+
+        <button
+          class="reset"
+          onclick="resetTimer()">
+          🔄 إعادة ضبط
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         المهام
+    ========================== -->
+
+    <div class="card">
+
+      <h2>📝 مهامي الدراسية</h2>
+
+      <div id="tasks">
+
+        <p class="empty">
+          لم تضف أي مهام حتى الآن
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <footer>
+    Developed by Ammar Al-Haddar
+  </footer>
+
+</div>
+
+
+<script>
+
+  let username = "";
+  let tasks = [];
+
+  let calendarTasks = [];
+
+  let timerInterval = null;
+  let remainingSeconds = 0;
+  let timerRunning = false;
+  let currentTaskIndex = null;
+
+  let currentCalendarDate = new Date();
+  let selectedDate = null;
+
+
+  /* =========================
+     تشغيل الموقع
+  ========================== */
+
+  window.onload = function () {
+
+    const savedUsername =
+      localStorage.getItem("studyUsername");
+
+    if (savedUsername) {
+
+      username = savedUsername;
 
       openApp();
+
     }
 
-    // فتح التطبيق
-    function openApp() {
-      document.getElementById("loginBox")
-        .style.display = "none";
+  };
 
-      document.getElementById("app")
-        .style.display = "block";
 
-      document.getElementById("welcomeText")
-        .textContent = "أهلًا " + username + " 👋";
+  /* =========================
+     تسجيل الدخول
+  ========================== */
 
-      loadTasks();
-      showTasks();
+  function login() {
+
+    const input =
+      document.getElementById("usernameInput");
+
+    const name =
+      input.value.trim();
+
+    if (!name) {
+
+      alert("اكتب اسم مستخدم أولاً");
+
+      return;
+
     }
 
-    // تسجيل الخروج
-    function logout() {
-      saveTasks();
+    username = name;
 
-      username = "";
-      tasks = [];
+    localStorage.setItem(
+      "studyUsername",
+      username
+    );
 
-      clearInterval(timerInterval);
+    openApp();
 
-      remainingSeconds = 0;
-      timerRunning = false;
-      currentTaskIndex = null;
+  }
 
-      document.getElementById("timer")
-        .textContent = "00:00:00";
 
-      localStorage.removeItem("studyUsername");
+  /* =========================
+     فتح التطبيق
+  ========================== */
 
-      document.getElementById("app")
-        .style.display = "none";
+  function openApp() {
 
-      document.getElementById("loginBox")
-        .style.display = "block";
+    document.getElementById("loginBox")
+      .style.display = "none";
 
-      document.getElementById("usernameInput")
-        .value = "";
+    document.getElementById("app")
+      .style.display = "block";
 
-      showTasks();
-    }
+    document.getElementById("welcomeText")
+      .textContent =
+      "أهلًا " + username + " 👋";
 
-    // مفتاح التخزين الخاص بالمستخدم
-    function getStorageKey() {
-      return "studyTasks_" + username;
-    }
+    loadTasks();
+    loadCalendarTasks();
 
-    // حفظ المهام
-    function saveTasks() {
-      if (!username) return;
+    showTasks();
+    renderCalendar();
 
-      localStorage.setItem(
-        getStorageKey(),
-        JSON.stringify(tasks)
-      );
-    }
+  }
 
-    // تحميل المهام
-    function loadTasks() {
-      tasks = JSON.parse(
-        localStorage.getItem(getStorageKey())
+
+  /* =========================
+     تسجيل الخروج
+  ========================== */
+
+  function logout() {
+
+    saveTasks();
+    saveCalendarTasks();
+
+    username = "";
+    tasks = [];
+    calendarTasks = [];
+
+    clearInterval(timerInterval);
+
+    remainingSeconds = 0;
+    timerRunning = false;
+    currentTaskIndex = null;
+
+    document.getElementById("timer")
+      .textContent = "00:00:00";
+
+    localStorage.removeItem(
+      "studyUsername"
+    );
+
+    document.getElementById("app")
+      .style.display = "none";
+
+    document.getElementById("loginBox")
+      .style.display = "block";
+
+    document.getElementById("usernameInput")
+      .value = "";
+
+    showTasks();
+
+  }
+
+
+  /* =========================
+     مفاتيح التخزين
+  ========================== */
+
+  function getStorageKey() {
+
+    return "studyTasks_" + username;
+
+  }
+
+  function getCalendarStorageKey() {
+
+    return "studyCalendar_" + username;
+
+  }
+
+
+  /* =========================
+     المهام العادية
+  ========================== */
+
+  function saveTasks() {
+
+    if (!username) return;
+
+    localStorage.setItem(
+      getStorageKey(),
+      JSON.stringify(tasks)
+    );
+
+  }
+
+
+  function loadTasks() {
+
+    tasks =
+      JSON.parse(
+        localStorage.getItem(
+          getStorageKey()
+        )
       ) || [];
-    }
 
-    // إضافة مهمة
-    function addTask() {
-      const name = document
-        .getElementById("taskName")
-        .value
-        .trim();
+  }
 
-      const type = document
-        .getElementById("taskType")
+
+  function addTask() {
+
+    const name =
+      document.getElementById("taskName")
+        .value.trim();
+
+    const type =
+      document.getElementById("taskType")
         .value;
 
-      const hours = Number(
+    const hours =
+      Number(
         document.getElementById("taskHours")
-        .value
+          .value
       );
 
-      const minutes = Number(
+    const minutes =
+      Number(
         document.getElementById("taskMinutes")
-        .value
+          .value
       );
 
-      if (
-        !name ||
-        hours < 0 ||
-        minutes < 0 ||
-        minutes > 59 ||
-        (hours === 0 && minutes === 0)
-      ) {
-        alert("أدخل اسم المهمة ومدة صحيحة");
-        return;
-      }
+    if (
+      !name ||
+      hours < 0 ||
+      minutes < 0 ||
+      minutes > 59 ||
+      (hours === 0 && minutes === 0)
+    ) {
 
-      const totalSeconds =
-        (hours * 60 * 60) +
-        (minutes * 60);
+      alert("أدخل اسم المهمة ومدة صحيحة");
 
-      tasks.push({
-        name: name,
-        type: type,
-        hours: hours,
-        minutes: minutes,
-        totalSeconds: totalSeconds,
-        done: false
-      });
+      return;
 
-      saveTasks();
-      showTasks();
-
-      document.getElementById("taskName")
-        .value = "";
-
-      document.getElementById("taskHours")
-        .value = "0";
-
-      document.getElementById("taskMinutes")
-        .value = "0";
     }
 
-    // تحويل المدة إلى نص
-    function formatDuration(hours, minutes) {
-      if (hours > 0 && minutes > 0) {
-        return hours + " ساعة و" + minutes + " دقيقة";
-      }
+    const totalSeconds =
+      (hours * 60 * 60) +
+      (minutes * 60);
 
-      if (hours > 0) {
-        return hours + " ساعة";
-      }
+    tasks.push({
 
-      return minutes + " دقيقة";
+      name: name,
+      type: type,
+      hours: hours,
+      minutes: minutes,
+      totalSeconds: totalSeconds,
+      done: false
+
+    });
+
+    saveTasks();
+
+    showTasks();
+
+    document.getElementById("taskName")
+      .value = "";
+
+    document.getElementById("taskHours")
+      .value = "0";
+
+    document.getElementById("taskMinutes")
+      .value = "0";
+
+  }
+
+
+  function formatDuration(hours, minutes) {
+
+    if (hours > 0 && minutes > 0) {
+
+      return hours +
+        " ساعة و" +
+        minutes +
+        " دقيقة";
+
     }
 
-    // عرض المهام
-    function showTasks() {
-      const box =
-        document.getElementById("tasks");
+    if (hours > 0) {
 
-      if (!box) return;
+      return hours + " ساعة";
 
-      if (tasks.length === 0) {
-        box.innerHTML = `
-          <p class="empty">
-            لم تضف أي مهام حتى الآن
-          </p>
-        `;
-        return;
-      }
+    }
 
-      box.innerHTML = "";
+    return minutes + " دقيقة";
 
-      tasks.forEach(function (task, index) {
-        const div =
-          document.createElement("div");
+  }
 
-        div.className = task.done
+
+  function showTasks() {
+
+    const box =
+      document.getElementById("tasks");
+
+    if (!box) return;
+
+    if (tasks.length === 0) {
+
+      box.innerHTML = `
+        <p class="empty">
+          لم تضف أي مهام حتى الآن
+        </p>
+      `;
+
+      return;
+
+    }
+
+    box.innerHTML = "";
+
+    tasks.forEach(function(task, index) {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        task.done
           ? "task done"
           : "task";
 
-        div.innerHTML = `
-          <div class="task-title">
-            ${task.name}
-          </div>
+      div.innerHTML = `
 
-          <div class="task-info">
-            النوع: ${task.type}
-            <br>
-            المدة:
-            ${formatDuration(task.hours, task.minutes)}
-          </div>
+        <div class="task-title">
+          ${escapeHTML(task.name)}
+        </div>
 
-          <div class="task-buttons">
+        <div class="task-info">
 
-            <button
-              class="start"
-              onclick="startTimer(${index})">
-              ▶️ ابدأ المؤقت
-            </button>
+          النوع:
+          ${escapeHTML(task.type)}
 
-            <button
-              class="finish"
-              onclick="finishTask(${index})">
-              ✅ ${task.done
+          <br>
+
+          المدة:
+          ${formatDuration(
+            task.hours,
+            task.minutes
+          )}
+
+        </div>
+
+        <div class="task-buttons">
+
+          <button
+            class="start"
+            onclick="startTimer(${index})">
+            ▶️ ابدأ المؤقت
+          </button>
+
+          <button
+            class="finish"
+            onclick="finishTask(${index})">
+            ✅ ${
+              task.done
                 ? "تم الإنجاز"
-                : "إنهاء"}
-            </button>
+                : "إنهاء"
+            }
+          </button>
 
-            <button
-              class="remove"
-              onclick="deleteTask(${index})">
-              🗑️ حذف
-            </button>
+          <button
+            class="remove"
+            onclick="deleteTask(${index})">
+            🗑️ حذف
+          </button>
 
-          </div>
-        `;
+        </div>
+      `;
 
-        box.appendChild(div);
-      });
-    }
+      box.appendChild(div);
 
-    // بدء المؤقت من البداية
-    function startTimer(index) {
-      clearInterval(timerInterval);
+    });
 
-      currentTaskIndex = index;
+  }
 
-      remainingSeconds =
-        tasks[index].totalSeconds;
 
-      timerRunning = true;
+  /* =========================
+     المؤقت
+  ========================== */
 
-      updateTimer();
+  function startTimer(index) {
 
-      timerInterval = setInterval(function () {
+    clearInterval(timerInterval);
+
+    currentTaskIndex = index;
+
+    remainingSeconds =
+      tasks[index].totalSeconds;
+
+    timerRunning = true;
+
+    updateTimer();
+
+    timerInterval =
+      setInterval(function() {
+
         if (remainingSeconds > 0) {
+
           remainingSeconds--;
+
           updateTimer();
+
         }
 
         if (remainingSeconds <= 0) {
+
           clearInterval(timerInterval);
+
           timerRunning = false;
 
           alert(
@@ -573,104 +1013,736 @@
           );
 
           finishTask(index);
+
         }
+
       }, 1000);
+
+  }
+
+
+  function pauseTimer() {
+
+    if (!timerRunning) return;
+
+    clearInterval(timerInterval);
+
+    timerRunning = false;
+
+  }
+
+
+  function resumeTimer() {
+
+    if (timerRunning) return;
+
+    if (remainingSeconds <= 0) {
+
+      alert(
+        "لا يوجد مؤقت متوقف لإعادة تشغيله"
+      );
+
+      return;
+
     }
 
-    // إيقاف المؤقت مؤقتًا
-    function pauseTimer() {
-      if (!timerRunning) return;
+    timerRunning = true;
 
-      clearInterval(timerInterval);
-      timerRunning = false;
-    }
+    timerInterval =
+      setInterval(function() {
 
-    // إعادة تشغيل المؤقت من مكان التوقف
-    function resumeTimer() {
-      if (timerRunning) return;
-
-      if (remainingSeconds <= 0) {
-        alert("لا يوجد مؤقت متوقف لإعادة تشغيله");
-        return;
-      }
-
-      timerRunning = true;
-
-      timerInterval = setInterval(function () {
         if (remainingSeconds > 0) {
+
           remainingSeconds--;
+
           updateTimer();
+
         }
 
         if (remainingSeconds <= 0) {
+
           clearInterval(timerInterval);
+
           timerRunning = false;
 
-          if (currentTaskIndex !== null) {
+          if (
+            currentTaskIndex !== null
+          ) {
+
             alert(
               "🎉 انتهى وقت المهمة:\n" +
               tasks[currentTaskIndex].name
             );
 
-            finishTask(currentTaskIndex);
+            finishTask(
+              currentTaskIndex
+            );
+
           }
+
         }
+
       }, 1000);
-    }
 
-    // إعادة المؤقت إلى صفر
-    function resetTimer() {
-      clearInterval(timerInterval);
+  }
 
-      remainingSeconds = 0;
-      timerRunning = false;
-      currentTaskIndex = null;
 
-      document.getElementById("timer")
-        .textContent = "00:00:00";
-    }
+  function resetTimer() {
 
-    // عرض الوقت بالساعات والدقائق والثواني
-    function updateTimer() {
-      const hours =
-        Math.floor(remainingSeconds / 3600);
+    clearInterval(timerInterval);
 
-      const minutes =
-        Math.floor((remainingSeconds % 3600) / 60);
+    remainingSeconds = 0;
+    timerRunning = false;
+    currentTaskIndex = null;
 
-      const seconds =
-        remainingSeconds % 60;
+    document.getElementById("timer")
+      .textContent = "00:00:00";
 
-      document.getElementById("timer")
-        .textContent =
-        String(hours).padStart(2, "0") + ":" +
-        String(minutes).padStart(2, "0") + ":" +
-        String(seconds).padStart(2, "0");
-    }
+  }
 
-    // إنهاء المهمة
-    function finishTask(index) {
-      tasks[index].done = true;
 
-      saveTasks();
-      showTasks();
-    }
+  function updateTimer() {
 
-    // حذف المهمة
-    function deleteTask(index) {
-      const answer = confirm(
+    const hours =
+      Math.floor(
+        remainingSeconds / 3600
+      );
+
+    const minutes =
+      Math.floor(
+        (remainingSeconds % 3600) / 60
+      );
+
+    const seconds =
+      remainingSeconds % 60;
+
+    document.getElementById("timer")
+      .textContent =
+
+      String(hours).padStart(2, "0") +
+      ":" +
+
+      String(minutes).padStart(2, "0") +
+      ":" +
+
+      String(seconds).padStart(2, "0");
+
+  }
+
+
+  function finishTask(index) {
+
+    if (!tasks[index]) return;
+
+    tasks[index].done = true;
+
+    saveTasks();
+
+    showTasks();
+
+  }
+
+
+  function deleteTask(index) {
+
+    const answer =
+      confirm(
         "هل تريد حذف هذه المهمة؟"
       );
 
-      if (!answer) return;
+    if (!answer) return;
 
-      tasks.splice(index, 1);
+    tasks.splice(index, 1);
 
-      saveTasks();
-      showTasks();
+    saveTasks();
+
+    showTasks();
+
+  }
+
+
+  /* =========================
+     الروزنامة
+  ========================== */
+
+  function saveCalendarTasks() {
+
+    if (!username) return;
+
+    localStorage.setItem(
+      getCalendarStorageKey(),
+      JSON.stringify(calendarTasks)
+    );
+
+  }
+
+
+  function loadCalendarTasks() {
+
+    calendarTasks =
+      JSON.parse(
+        localStorage.getItem(
+          getCalendarStorageKey()
+        )
+      ) || [];
+
+  }
+
+
+  function dateKey(year, month, day) {
+
+    return (
+      year +
+      "-" +
+      String(month + 1).padStart(2, "0") +
+      "-" +
+      String(day).padStart(2, "0")
+    );
+
+  }
+
+
+  function formatArabicDate(date) {
+
+    return date.toLocaleDateString(
+      "ar-JO",
+      {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }
+    );
+
+  }
+
+
+  function renderCalendar() {
+
+    const grid =
+      document.getElementById(
+        "calendarGrid"
+      );
+
+    const title =
+      document.getElementById(
+        "monthTitle"
+      );
+
+    grid.innerHTML = "";
+
+    const year =
+      currentCalendarDate.getFullYear();
+
+    const month =
+      currentCalendarDate.getMonth();
+
+    const monthName =
+      currentCalendarDate.toLocaleDateString(
+        "ar-JO",
+        {
+          month: "long",
+          year: "numeric"
+        }
+      );
+
+    title.textContent = monthName;
+
+
+    const firstDay =
+      new Date(
+        year,
+        month,
+        1
+      ).getDay();
+
+    const daysInMonth =
+      new Date(
+        year,
+        month + 1,
+        0
+      ).getDate();
+
+
+    /* أيام فارغة قبل بداية الشهر */
+
+    for (
+      let i = 0;
+      i < firstDay;
+      i++
+    ) {
+
+      const empty =
+        document.createElement("div");
+
+      empty.className =
+        "calendar-day empty-day";
+
+      grid.appendChild(empty);
+
     }
-  </script>
+
+
+    /* أيام الشهر */
+
+    const today =
+      new Date();
+
+    const todayKey =
+      dateKey(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+
+
+    for (
+      let day = 1;
+      day <= daysInMonth;
+      day++
+    ) {
+
+      const key =
+        dateKey(
+          year,
+          month,
+          day
+        );
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "calendar-day";
+
+      if (key === todayKey) {
+
+        div.classList.add("today");
+
+      }
+
+
+      div.onclick =
+        function() {
+
+          selectCalendarDate(
+            year,
+            month,
+            day
+          );
+
+        };
+
+
+      const dayNumber =
+        document.createElement("div");
+
+      dayNumber.className =
+        "day-number";
+
+      dayNumber.textContent =
+        day;
+
+
+      const taskBox =
+        document.createElement("div");
+
+      taskBox.className =
+        "day-tasks";
+
+
+      const dayTasks =
+        calendarTasks.filter(
+          function(task) {
+
+            return task.date === key;
+
+          }
+        );
+
+
+      dayTasks
+        .slice(0, 3)
+        .forEach(function(task) {
+
+          const taskElement =
+            document.createElement("div");
+
+          taskElement.className =
+            "calendar-task" +
+            (task.done
+              ? " done"
+              : "");
+
+          taskElement.textContent =
+            task.time
+              ? task.time +
+                " - " +
+                task.title
+              : task.title;
+
+          taskBox.appendChild(
+            taskElement
+          );
+
+        });
+
+
+      if (dayTasks.length > 3) {
+
+        const more =
+          document.createElement("div");
+
+        more.textContent =
+          "+" +
+          (dayTasks.length - 3) +
+          " أخرى";
+
+        more.style.marginTop = "3px";
+        more.style.color = "#64748b";
+
+        taskBox.appendChild(more);
+
+      }
+
+
+      div.appendChild(dayNumber);
+      div.appendChild(taskBox);
+
+      grid.appendChild(div);
+
+    }
+
+  }
+
+
+  function previousMonth() {
+
+    currentCalendarDate.setMonth(
+      currentCalendarDate.getMonth() - 1
+    );
+
+    renderCalendar();
+
+  }
+
+
+  function nextMonth() {
+
+    currentCalendarDate.setMonth(
+      currentCalendarDate.getMonth() + 1
+    );
+
+    renderCalendar();
+
+  }
+
+
+  function selectCalendarDate(
+    year,
+    month,
+    day
+  ) {
+
+    selectedDate =
+      dateKey(
+        year,
+        month,
+        day
+      );
+
+    const date =
+      new Date(
+        year,
+        month,
+        day
+      );
+
+    document.getElementById(
+      "selectedDate"
+    ).textContent =
+      "📅 " +
+      formatArabicDate(date);
+
+
+    document.getElementById(
+      "dateTaskForm"
+    ).classList.add("active");
+
+
+    document.getElementById(
+      "calendarTaskName"
+    ).focus();
+
+
+    showCalendarTasks();
+
+  }
+
+
+  function addCalendarTask() {
+
+    if (!selectedDate) {
+
+      alert("اختر يومًا أولاً");
+
+      return;
+
+    }
+
+
+    const title =
+      document.getElementById(
+        "calendarTaskName"
+      ).value.trim();
+
+    const time =
+      document.getElementById(
+        "calendarTaskTime"
+      ).value;
+
+    const note =
+      document.getElementById(
+        "calendarTaskNote"
+      ).value.trim();
+
+
+    if (!title) {
+
+      alert(
+        "اكتب اسم المهمة أو الموعد"
+      );
+
+      return;
+
+    }
+
+
+    calendarTasks.push({
+
+      id: Date.now(),
+
+      date: selectedDate,
+
+      title: title,
+
+      time: time,
+
+      note: note,
+
+      done: false
+
+    });
+
+
+    saveCalendarTasks();
+
+    renderCalendar();
+
+    showCalendarTasks();
+
+
+    document.getElementById(
+      "calendarTaskName"
+    ).value = "";
+
+    document.getElementById(
+      "calendarTaskTime"
+    ).value = "";
+
+    document.getElementById(
+      "calendarTaskNote"
+    ).value = "";
+
+  }
+
+
+  function showCalendarTasks() {
+
+    const box =
+      document.getElementById(
+        "calendarTaskList"
+      );
+
+    if (!box) return;
+
+    if (!selectedDate) {
+
+      box.innerHTML = "";
+
+      return;
+
+    }
+
+
+    const dayTasks =
+      calendarTasks.filter(
+        function(task) {
+
+          return task.date === selectedDate;
+
+        }
+      );
+
+
+    if (dayTasks.length === 0) {
+
+      box.innerHTML = `
+        <p class="empty">
+          لا توجد مهام في هذا اليوم.
+        </p>
+      `;
+
+      return;
+
+    }
+
+
+    box.innerHTML = `
+      <h3 style="margin-bottom:8px;">
+        مهام هذا اليوم
+      </h3>
+    `;
+
+
+    dayTasks.forEach(
+      function(task) {
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "calendar-event";
+
+
+        div.innerHTML = `
+
+          <div class="calendar-event-title">
+            ${escapeHTML(task.title)}
+          </div>
+
+          ${
+            task.time
+              ? `
+                <div class="calendar-event-info">
+                  ⏰ ${escapeHTML(task.time)}
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            task.note
+              ? `
+                <div class="calendar-event-info">
+                  📝 ${escapeHTML(task.note)}
+                </div>
+              `
+              : ""
+          }
+
+          <div class="event-buttons">
+
+            <button
+              class="event-done"
+              onclick="toggleCalendarTask(${task.id})">
+              ${
+                task.done
+                  ? "↩️ غير مكتملة"
+                  : "✅ مكتملة"
+              }
+            </button>
+
+            <button
+              class="event-delete"
+              onclick="deleteCalendarTask(${task.id})">
+              🗑️ حذف
+            </button>
+
+          </div>
+
+        `;
+
+        box.appendChild(div);
+
+      }
+    );
+
+  }
+
+
+  function toggleCalendarTask(id) {
+
+    const task =
+      calendarTasks.find(
+        function(item) {
+
+          return item.id === id;
+
+        }
+      );
+
+    if (!task) return;
+
+    task.done =
+      !task.done;
+
+    saveCalendarTasks();
+
+    renderCalendar();
+
+    showCalendarTasks();
+
+  }
+
+
+  function deleteCalendarTask(id) {
+
+    const answer =
+      confirm(
+        "هل تريد حذف هذا الموعد؟"
+      );
+
+    if (!answer) return;
+
+
+    calendarTasks =
+      calendarTasks.filter(
+        function(task) {
+
+          return task.id !== id;
+
+        }
+      );
+
+
+    saveCalendarTasks();
+
+    renderCalendar();
+
+    showCalendarTasks();
+
+  }
+
+
+  /* =========================
+     حماية عرض النصوص
+  ========================== */
+
+  function escapeHTML(text) {
+
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+</script>
 
 </body>
 </html>
+
 
