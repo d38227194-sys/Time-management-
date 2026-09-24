@@ -70,11 +70,21 @@
     }
 
     button:hover {
-      background: #1d4ed8;
+      opacity: 0.9;
     }
 
-    .logout {
+    .logout,
+    .delete,
+    .reset {
       background: #dc2626;
+    }
+
+    .pause {
+      background: #f59e0b;
+    }
+
+    .resume {
+      background: #16a34a;
     }
 
     .task {
@@ -111,23 +121,29 @@
     }
 
     .start {
-      background: #16a34a;
+      background: #2563eb;
     }
 
     .finish {
       background: #7c3aed;
     }
 
-    .remove {
-      background: #dc2626;
-    }
-
     .timer {
       text-align: center;
-      font-size: 45px;
+      font-size: 48px;
       font-weight: bold;
       color: #dc2626;
-      margin: 15px;
+      margin: 18px;
+      direction: ltr;
+    }
+
+    .timer-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .timer-buttons button {
+      flex: 1;
     }
 
     .empty {
@@ -151,7 +167,8 @@
     }
 
     @media (max-width: 600px) {
-      .task-buttons {
+      .task-buttons,
+      .timer-buttons {
         flex-direction: column;
       }
 
@@ -214,13 +231,23 @@
           <option>قراءة</option>
         </select>
 
-        <label>المدة بالدقائق</label>
+        <label>عدد الساعات</label>
 
         <input
-          id="taskTime"
+          id="taskHours"
           type="number"
-          min="1"
-          placeholder="مثلاً: 30"
+          min="0"
+          value="0"
+        >
+
+        <label>عدد الدقائق</label>
+
+        <input
+          id="taskMinutes"
+          type="number"
+          min="0"
+          max="59"
+          value="30"
         >
 
         <button onclick="addTask()">
@@ -233,19 +260,25 @@
         <h2>⏱️ المؤقت</h2>
 
         <div class="timer" id="timer">
-          00:00
+          00:00:00
         </div>
 
-        <button onclick="pauseTimer()">
-          إيقاف مؤقت
-        </button>
+        <div class="timer-buttons">
+          <button class="pause" onclick="pauseTimer()">
+            ⏸️ إيقاف مؤقت
+          </button>
 
-        <button class="remove" onclick="resetTimer()">
-          إلغاء المؤقت
-        </button>
+          <button class="resume" onclick="resumeTimer()">
+            ▶️ إعادة تشغيل
+          </button>
+
+          <button class="reset" onclick="resetTimer()">
+            🔄 إعادة ضبط
+          </button>
+        </div>
       </div>
 
-      <!-- قائمة المهام -->
+      <!-- المهام -->
       <div class="card">
         <h2>📝 مهامي الدراسية</h2>
 
@@ -258,7 +291,6 @@
 
     </div>
 
-    <!-- الحقوق -->
     <footer>
       Developed by Ammar Al-Haddar
     </footer>
@@ -271,6 +303,8 @@
 
     let timerInterval = null;
     let remainingSeconds = 0;
+    let timerRunning = false;
+    let currentTaskIndex = null;
 
     // تشغيل الموقع
     window.onload = function () {
@@ -328,7 +362,13 @@
       tasks = [];
 
       clearInterval(timerInterval);
-      resetTimer();
+
+      remainingSeconds = 0;
+      timerRunning = false;
+      currentTaskIndex = null;
+
+      document.getElementById("timer")
+        .textContent = "00:00:00";
 
       localStorage.removeItem("studyUsername");
 
@@ -344,7 +384,7 @@
       showTasks();
     }
 
-    // مفتاح التخزين الخاص بكل مستخدم
+    // مفتاح التخزين الخاص بالمستخدم
     function getStorageKey() {
       return "studyTasks_" + username;
     }
@@ -377,20 +417,37 @@
         .getElementById("taskType")
         .value;
 
-      const time = Number(
-        document.getElementById("taskTime")
+      const hours = Number(
+        document.getElementById("taskHours")
         .value
       );
 
-      if (!name || !time || time <= 0) {
-        alert("اكتب اسم المهمة والمدة المطلوبة");
+      const minutes = Number(
+        document.getElementById("taskMinutes")
+        .value
+      );
+
+      if (
+        !name ||
+        hours < 0 ||
+        minutes < 0 ||
+        minutes > 59 ||
+        (hours === 0 && minutes === 0)
+      ) {
+        alert("أدخل اسم المهمة ومدة صحيحة");
         return;
       }
+
+      const totalSeconds =
+        (hours * 60 * 60) +
+        (minutes * 60);
 
       tasks.push({
         name: name,
         type: type,
-        time: time,
+        hours: hours,
+        minutes: minutes,
+        totalSeconds: totalSeconds,
         done: false
       });
 
@@ -400,8 +457,24 @@
       document.getElementById("taskName")
         .value = "";
 
-      document.getElementById("taskTime")
-        .value = "";
+      document.getElementById("taskHours")
+        .value = "0";
+
+      document.getElementById("taskMinutes")
+        .value = "30";
+    }
+
+    // تحويل المدة إلى نص
+    function formatDuration(hours, minutes) {
+      if (hours > 0 && minutes > 0) {
+        return hours + " ساعة و" + minutes + " دقيقة";
+      }
+
+      if (hours > 0) {
+        return hours + " ساعة";
+      }
+
+      return minutes + " دقيقة";
     }
 
     // عرض المهام
@@ -438,7 +511,8 @@
           <div class="task-info">
             النوع: ${task.type}
             <br>
-            المدة: ${task.time} دقيقة
+            المدة:
+            ${formatDuration(task.hours, task.minutes)}
           </div>
 
           <div class="task-buttons">
@@ -446,7 +520,7 @@
             <button
               class="start"
               onclick="startTimer(${index})">
-              ▶️ ابدأ
+              ▶️ ابدأ المؤقت
             </button>
 
             <button
@@ -470,22 +544,28 @@
       });
     }
 
-    // تشغيل المؤقت
+    // بدء المؤقت من البداية
     function startTimer(index) {
       clearInterval(timerInterval);
 
+      currentTaskIndex = index;
+
       remainingSeconds =
-        tasks[index].time * 60;
+        tasks[index].totalSeconds;
+
+      timerRunning = true;
 
       updateTimer();
 
       timerInterval = setInterval(function () {
-        remainingSeconds--;
-
-        updateTimer();
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateTimer();
+        }
 
         if (remainingSeconds <= 0) {
           clearInterval(timerInterval);
+          timerRunning = false;
 
           alert(
             "🎉 انتهى وقت المهمة:\n" +
@@ -497,34 +577,75 @@
       }, 1000);
     }
 
-    // تحديث الوقت
+    // إيقاف المؤقت مؤقتًا
+    function pauseTimer() {
+      if (!timerRunning) return;
+
+      clearInterval(timerInterval);
+      timerRunning = false;
+    }
+
+    // إعادة تشغيل المؤقت من مكان التوقف
+    function resumeTimer() {
+      if (timerRunning) return;
+
+      if (remainingSeconds <= 0) {
+        alert("لا يوجد مؤقت متوقف لإعادة تشغيله");
+        return;
+      }
+
+      timerRunning = true;
+
+      timerInterval = setInterval(function () {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateTimer();
+        }
+
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+
+          if (currentTaskIndex !== null) {
+            alert(
+              "🎉 انتهى وقت المهمة:\n" +
+              tasks[currentTaskIndex].name
+            );
+
+            finishTask(currentTaskIndex);
+          }
+        }
+      }, 1000);
+    }
+
+    // إعادة المؤقت إلى صفر
+    function resetTimer() {
+      clearInterval(timerInterval);
+
+      remainingSeconds = 0;
+      timerRunning = false;
+      currentTaskIndex = null;
+
+      document.getElementById("timer")
+        .textContent = "00:00:00";
+    }
+
+    // عرض الوقت بالساعات والدقائق والثواني
     function updateTimer() {
+      const hours =
+        Math.floor(remainingSeconds / 3600);
+
       const minutes =
-        Math.floor(remainingSeconds / 60);
+        Math.floor((remainingSeconds % 3600) / 60);
 
       const seconds =
         remainingSeconds % 60;
 
       document.getElementById("timer")
         .textContent =
-        String(minutes).padStart(2, "0") +
-        ":" +
+        String(hours).padStart(2, "0") + ":" +
+        String(minutes).padStart(2, "0") + ":" +
         String(seconds).padStart(2, "0");
-    }
-
-    // إيقاف المؤقت
-    function pauseTimer() {
-      clearInterval(timerInterval);
-    }
-
-    // إعادة المؤقت
-    function resetTimer() {
-      clearInterval(timerInterval);
-
-      remainingSeconds = 0;
-
-      document.getElementById("timer")
-        .textContent = "00:00";
     }
 
     // إنهاء المهمة
