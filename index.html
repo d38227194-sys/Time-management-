@@ -48,6 +48,7 @@
 
     input,
     select,
+    textarea,
     button {
       width: 100%;
       padding: 12px;
@@ -56,8 +57,14 @@
     }
 
     input,
-    select {
+    select,
+    textarea {
       border: 1px solid #aaa;
+    }
+
+    textarea {
+      resize: vertical;
+      line-height: 1.7;
     }
 
     button {
@@ -128,6 +135,10 @@
       background: #7c3aed;
     }
 
+    .remove {
+      background: #dc2626;
+    }
+
     .timer {
       text-align: center;
       font-size: 48px;
@@ -156,6 +167,21 @@
       color: #2563eb;
       font-size: 20px;
       font-weight: bold;
+    }
+
+    .ai-answer {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8fafc;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      line-height: 1.9;
+      min-height: 45px;
+    }
+
+    .ai-button {
+      background: #7c3aed;
     }
 
     footer {
@@ -255,6 +281,29 @@
         </button>
       </div>
 
+      <!-- مساعد الذكاء الاصطناعي -->
+      <div class="card">
+        <h2>🤖 مساعد الدراسة الذكي</h2>
+
+        <p>
+          اسأل المساعد عن تنظيم وقتك أو إنشاء خطة دراسية.
+        </p>
+
+        <textarea
+          id="aiQuestion"
+          rows="4"
+          placeholder="مثلاً: أنشئ لي خطة لمراجعة الرياضيات والعلوم خلال 3 أيام"
+        ></textarea>
+
+        <button class="ai-button" onclick="askAI()">
+          ✨ اسأل الذكاء الاصطناعي
+        </button>
+
+        <div id="aiAnswer" class="ai-answer">
+          ستظهر إجابة الذكاء الاصطناعي هنا.
+        </div>
+      </div>
+
       <!-- المؤقت -->
       <div class="card">
         <h2>⏱️ المؤقت</h2>
@@ -298,6 +347,14 @@
   </div>
 
   <script>
+    /*
+      بعد نشر الخادم، ضع رابطه هنا.
+      أثناء الاختبار المحلي استخدم:
+      http://localhost:3000/api/study-ai
+    */
+    const AI_SERVER_URL =
+      "ضع-رابط-الخادم-هنا/api/study-ai";
+
     let username = "";
     let tasks = [];
 
@@ -306,7 +363,6 @@
     let timerRunning = false;
     let currentTaskIndex = null;
 
-    // تشغيل الموقع
     window.onload = function () {
       const savedUsername =
         localStorage.getItem("studyUsername");
@@ -317,7 +373,6 @@
       }
     };
 
-    // تسجيل الدخول
     function login() {
       const input =
         document.getElementById("usernameInput");
@@ -339,7 +394,6 @@
       openApp();
     }
 
-    // فتح التطبيق
     function openApp() {
       document.getElementById("loginBox")
         .style.display = "none";
@@ -354,7 +408,6 @@
       showTasks();
     }
 
-    // تسجيل الخروج
     function logout() {
       saveTasks();
 
@@ -384,12 +437,10 @@
       showTasks();
     }
 
-    // مفتاح التخزين الخاص بالمستخدم
     function getStorageKey() {
       return "studyTasks_" + username;
     }
 
-    // حفظ المهام
     function saveTasks() {
       if (!username) return;
 
@@ -399,14 +450,12 @@
       );
     }
 
-    // تحميل المهام
     function loadTasks() {
       tasks = JSON.parse(
         localStorage.getItem(getStorageKey())
       ) || [];
     }
 
-    // إضافة مهمة
     function addTask() {
       const name = document
         .getElementById("taskName")
@@ -418,13 +467,11 @@
         .value;
 
       const hours = Number(
-        document.getElementById("taskHours")
-        .value
+        document.getElementById("taskHours").value
       );
 
       const minutes = Number(
-        document.getElementById("taskMinutes")
-        .value
+        document.getElementById("taskMinutes").value
       );
 
       if (
@@ -439,8 +486,7 @@
       }
 
       const totalSeconds =
-        (hours * 60 * 60) +
-        (minutes * 60);
+        (hours * 60 * 60) + (minutes * 60);
 
       tasks.push({
         name: name,
@@ -454,17 +500,11 @@
       saveTasks();
       showTasks();
 
-      document.getElementById("taskName")
-        .value = "";
-
-      document.getElementById("taskHours")
-        .value = "0";
-
-      document.getElementById("taskMinutes")
-        .value = "0";
+      document.getElementById("taskName").value = "";
+      document.getElementById("taskHours").value = "0";
+      document.getElementById("taskMinutes").value = "0";
     }
 
-    // تحويل المدة إلى نص
     function formatDuration(hours, minutes) {
       if (hours > 0 && minutes > 0) {
         return hours + " ساعة و" + minutes + " دقيقة";
@@ -477,7 +517,6 @@
       return minutes + " دقيقة";
     }
 
-    // عرض المهام
     function showTasks() {
       const box =
         document.getElementById("tasks");
@@ -505,18 +544,17 @@
 
         div.innerHTML = `
           <div class="task-title">
-            ${task.name}
+            ${escapeHTML(task.name)}
           </div>
 
           <div class="task-info">
-            النوع: ${task.type}
+            النوع: ${escapeHTML(task.type)}
             <br>
             المدة:
             ${formatDuration(task.hours, task.minutes)}
           </div>
 
           <div class="task-buttons">
-
             <button
               class="start"
               onclick="startTimer(${index})">
@@ -526,9 +564,7 @@
             <button
               class="finish"
               onclick="finishTask(${index})">
-              ✅ ${task.done
-                ? "تم الإنجاز"
-                : "إنهاء"}
+              ✅ ${task.done ? "تم الإنجاز" : "إنهاء"}
             </button>
 
             <button
@@ -536,7 +572,6 @@
               onclick="deleteTask(${index})">
               🗑️ حذف
             </button>
-
           </div>
         `;
 
@@ -544,15 +579,11 @@
       });
     }
 
-    // بدء المؤقت من البداية
     function startTimer(index) {
       clearInterval(timerInterval);
 
       currentTaskIndex = index;
-
-      remainingSeconds =
-        tasks[index].totalSeconds;
-
+      remainingSeconds = tasks[index].totalSeconds;
       timerRunning = true;
 
       updateTimer();
@@ -577,7 +608,6 @@
       }, 1000);
     }
 
-    // إيقاف المؤقت مؤقتًا
     function pauseTimer() {
       if (!timerRunning) return;
 
@@ -585,7 +615,6 @@
       timerRunning = false;
     }
 
-    // إعادة تشغيل المؤقت من مكان التوقف
     function resumeTimer() {
       if (timerRunning) return;
 
@@ -618,7 +647,6 @@
       }, 1000);
     }
 
-    // إعادة المؤقت إلى صفر
     function resetTimer() {
       clearInterval(timerInterval);
 
@@ -630,7 +658,6 @@
         .textContent = "00:00:00";
     }
 
-    // عرض الوقت بالساعات والدقائق والثواني
     function updateTimer() {
       const hours =
         Math.floor(remainingSeconds / 3600);
@@ -648,15 +675,15 @@
         String(seconds).padStart(2, "0");
     }
 
-    // إنهاء المهمة
     function finishTask(index) {
+      if (!tasks[index]) return;
+
       tasks[index].done = true;
 
       saveTasks();
       showTasks();
     }
 
-    // حذف المهمة
     function deleteTask(index) {
       const answer = confirm(
         "هل تريد حذف هذه المهمة؟"
@@ -669,8 +696,72 @@
       saveTasks();
       showTasks();
     }
+
+    async function askAI() {
+      const question = document
+        .getElementById("aiQuestion")
+        .value
+        .trim();
+
+      const answerBox =
+        document.getElementById("aiAnswer");
+
+      if (!question) {
+        alert("اكتب سؤالك أولاً");
+        return;
+      }
+
+      if (AI_SERVER_URL.includes("ضع-رابط")) {
+        answerBox.textContent =
+          "ضع رابط الخادم داخل المتغير AI_SERVER_URL أولاً.";
+        return;
+      }
+
+      answerBox.textContent =
+        "⏳ جاري تجهيز الإجابة...";
+
+      try {
+        const response = await fetch(
+          AI_SERVER_URL,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              question: question,
+              tasks: tasks
+            })
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "حدث خطأ في الخادم"
+          );
+        }
+
+        answerBox.textContent =
+          data.answer || "لم تصل إجابة.";
+      } catch (error) {
+        console.error(error);
+
+        answerBox.textContent =
+          "تعذر الاتصال بالمساعد الذكي. تأكد من تشغيل الخادم وصحة الرابط.";
+      }
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
   </script>
 
 </body>
 </html>
-
