@@ -35,225 +35,291 @@
   <style>
     * {
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
     }
     body {
       background-color: #121212;
-      color: #ffffff;
+      color: #e0e0e0;
       margin: 0;
-      padding: 20px;
+      padding: 15px;
+      direction: rtl;
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+    .btn-red {
+      background-color: #e53935;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
     }
     .card {
-      background: #1e1e2d;
-      padding: 20px;
+      background-color: #1e1e1e;
       border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-    input, button, select {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #333;
-      background: #2a2a3c;
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .btn-blue {
+      background-color: #1e88e5;
       color: white;
-      margin-top: 5px;
-    }
-    button {
-      cursor: pointer;
-      background: #007bff;
       border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      text-align: center;
+    }
+    .day-name {
+      font-size: 12px;
+      color: #888;
+      padding-bottom: 5px;
+    }
+    .day-cell {
+      background-color: #2a2a2a;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .day-cell.active {
+      border: 2px solid #1e88e5;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      background-color: #2a2a2a;
+      border: 1px solid #333;
+      color: white;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .timer-display {
+      font-size: 28px;
       font-weight: bold;
+      color: #e53935;
+      text-align: center;
+      margin: 15px 0;
+      font-family: monospace;
     }
-    button:hover {
-      background: #0056b3;
+    .btn-group {
+      display: flex;
+      gap: 8px;
     }
+    .btn-group button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-green { background-color: #43a047; }
+    .btn-orange { background-color: #fb8c00; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2 style="text-align: center;">📅 منظم وقت الدراسة</h2>
+  <!-- الهيدر العلوي -->
+  <div class="header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span>👋 أهلاً Aaam</span>
+    </div>
+    <button class="btn-red" onclick="loginUser()">تسجيل الدخول</button>
+  </div>
 
-    <!-- قسم تسجيل الدخول / اسم المستخدم -->
-    <div class="card">
-      <label>أدخل اسم المستخدم للتحميل والحفظ السحابي:</label><br>
-      <input type="text" id="usernameInput" placeholder="اكتب اسمك هنا..." style="width: 70%;">
-      <button onclick="loginUser()">دخول</button>
-      <p id="userStatus" style="font-size: 13px; color: #aaa; margin-top: 8px;"></p>
+  <!-- روزنامة الدراسة -->
+  <div class="card">
+    <div class="calendar-header">
+      <button class="btn-blue">التالي ◀</button>
+      <h3 style="margin: 0; font-size: 16px;">📅 روزنامة الدراسة<br><span style="font-size: 12px; font-weight: normal; color: #aaa;">أيلول 2026</span></h3>
+      <button class="btn-blue">▶ السابق</button>
     </div>
 
-    <!-- قسم إضافة مهمة دراسية -->
-    <div class="card">
-      <h3>➕ إضافة مهمة دراسية</h3>
-      <input type="text" id="taskSubject" placeholder="المادة أو المهمة" style="width: 100%;"><br><br>
-      <input type="date" id="taskDate" style="width: 100%;"><br><br>
-      <button onclick="addTask()" style="width: 100%; background: #28a745;">إضافة المهمة</button>
-    </div>
+    <div class="calendar-grid">
+      <div class="day-name">السبت</div>
+      <div class="day-name">الجمعة</div>
+      <div class="day-name">الخميس</div>
+      <div class="day-name">الأربعاء</div>
+      <div class="day-name">الثلاثاء</div>
+      <div class="day-name">الإثنين</div>
+      <div class="day-name">الأحد</div>
 
-    <!-- قائمة المهام -->
-    <div class="card">
-      <h3>📝 مهام الدراسة</h3>
-      <ul id="taskList" style="list-style: none; padding: 0;"></ul>
+      <div class="day-cell">5</div><div class="day-cell">4</div><div class="day-cell">3</div><div class="day-cell">2</div><div class="day-cell">1</div><div class="day-cell"></div><div class="day-cell"></div>
+      <div class="day-cell">12</div><div class="day-cell">11</div><div class="day-cell">10</div><div class="day-cell">9</div><div class="day-cell">8</div><div class="day-cell">7</div><div class="day-cell">6</div>
+      <div class="day-cell">19</div><div class="day-cell">18</div><div class="day-cell">17</div><div class="day-cell">16</div><div class="day-cell">15</div><div class="day-cell">14</div><div class="day-cell">13</div>
+      <div class="day-cell">26</div><div class="day-cell">25</div><div class="day-cell">24</div><div class="day-cell">23</div><div class="day-cell">22</div><div class="day-cell">21</div><div class="day-cell">20</div>
+      <div class="day-cell"></div><div class="day-cell"></div><div class="day-cell"></div><div class="day-cell"></div><div class="day-cell"></div><div class="day-cell">29</div><div class="day-cell active">28</div>
+    </div>
+    <p style="text-align: center; font-size: 11px; color: #777; margin-top: 10px;">اضغط على أي يوم لإضافة شيء</p>
+  </div>
+
+  <!-- إضافة مهمة دراسية -->
+  <div class="card">
+    <h3 style="margin-top: 0; font-size: 15px;">➕ إضافة مهمة دراسية</h3>
+    <input type="text" id="taskSubject" placeholder="المادة أو المهمة">
+    <input type="date" id="taskDate">
+    <button class="btn-blue" style="width: 100%; padding: 10px;" onclick="addTask()">إضافة المهمة</button>
+  </div>
+
+  <!-- المؤقت -->
+  <div class="card">
+    <h3 style="margin-top: 0; font-size: 15px; text-align: center;">⏱️ المؤقت</h3>
+    <div class="timer-display">00:00:00</div>
+    <div class="btn-group">
+      <button class="btn-red">إعادة ضبط</button>
+      <button class="btn-green">إعادة تشغيل</button>
+      <button class="btn-orange">إيقاف مؤقت</button>
     </div>
   </div>
 
-  <!-- ==================== زر Gemini العائم والنافذة المنبثقة ==================== -->
-  
-  <!-- الزر الدائري العائم -->
-  <div onclick="openAiModal()" style="position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, #4285f4, #9b51e0); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 1000;">
-    <!-- أيقونة Gemini -->
+  <!-- مهام الدراسة -->
+  <div class="card">
+    <h3 style="margin-top: 0; font-size: 15px;">📝 مهام الدراسة</h3>
+    <ul id="taskList" style="list-style: none; padding: 0; margin: 0;"></ul>
+  </div>
+
+
+  <!-- ==================== زر الذكاء الاصطناعي (Gemini) ==================== -->
+  <div onclick="openAiModal()" style="position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, #4285f4, #9b51e0); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 1000;">
     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" fill="white"/>
     </svg>
   </div>
 
-  <!-- النافذة المنبثقة للذكاء الاصطناعي -->
-  <div id="aiModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; align-items: center; justify-content: center;">
-    <div style="background: #1e1e2d; border-radius: 15px; width: 90%; max-width: 450px; padding: 20px; color: white; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto;">
+  <!-- نافذة Gemini المنبثقة -->
+  <div id="aiModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; align-items: center; justify-content: center;">
+    <div style="background: #1e1e1e; border-radius: 12px; width: 90%; max-width: 400px; padding: 20px; color: white; position: relative; border: 1px solid #333;">
+      <span onclick="closeAiModal()" style="position: absolute; top: 12px; left: 18px; font-size: 22px; cursor: pointer; color: #888;">&times;</span>
+      <h3 style="margin-top: 0;">✨ خطط الدراسة الذكية (Gemini)</h3>
       
-      <!-- زر إغلاق النافذة -->
-      <span onclick="closeAiModal()" style="position: absolute; top: 15px; left: 20px; font-size: 22px; cursor: pointer; color: #aaa;">&times;</span>
+      <label style="font-size: 12px; color: #aaa;">المادة:</label>
+      <input type="text" id="aiSubject" placeholder="مثال: رياضيات، علوم..." style="margin-top: 4px;">
+      
+      <label style="font-size: 12px; color: #aaa;">عدد الساعات اليومية:</label>
+      <input type="number" id="aiHours" placeholder="مثال: 2" style="margin-top: 4px;">
 
-      <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
-        ✨ مقترح الخطة الدراسية (Gemini)
-      </h3>
-      <p style="font-size: 13px; color: #ccc;">أدخل تفاصيل مادتك وسيقوم الذكاء الاصطناعي بإنشاء جدول دراسي مخصص لك:</p>
-
-      <label style="font-size: 13px;">اسم المادة:</label>
-      <input type="text" id="aiSubject" placeholder="مثلاً: رياضيات، فرنسي..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #2a2a3c; color: white; margin: 5px 0 15px 0; box-sizing: border-box;">
-
-      <label style="font-size: 13px;">عدد الساعات المتاحة يومياً:</label>
-      <input type="number" id="aiHours" placeholder="مثلاً: 3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #2a2a3c; color: white; margin: 5px 0 15px 0; box-sizing: border-box;">
-
-      <button onclick="generateAIPlan()" style="width: 100%; background: linear-gradient(135deg, #4285f4, #9b51e0); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px;">
-        توليد الخطة الدراسية 🚀
-      </button>
-
-      <div id="aiResult" style="margin-top: 15px; white-space: pre-line; background: #2a2a3c; padding: 12px; border-radius: 8px; display: none; border-right: 4px solid #4285f4; font-size: 14px; line-height: 1.6;"></div>
+      <button onclick="generateAIPlan()" class="btn-blue" style="width: 100%; padding: 10px; margin-top: 5px; background: linear-gradient(135deg, #4285f4, #9b51e0); border: none;">توليد الخطة 🚀</button>
+      
+      <div id="aiResult" style="margin-top: 15px; white-space: pre-line; background: #2a2a2a; padding: 10px; border-radius: 6px; display: none; font-size: 13px; max-height: 200px; overflow-y: auto;"></div>
     </div>
   </div>
 
-  <!-- ==================== البرمجة الخاصة بالوظائف ==================== -->
+
+  <!-- ==================== السكربت والربط ==================== -->
   <script>
-    let currentUser = "";
+    let currentUser = "Aaam";
     let tasks = [];
 
-    // تسجيل الدخول وتحميل البيانات من Firestore
     async function loginUser() {
-      const user = document.getElementById('usernameInput').value.trim();
-      if (!user) {
-        alert("يرجى إدخال اسم المستخدم!");
-        return;
-      }
-      currentUser = user;
-      document.getElementById('userStatus').innerText = "⏳ جاري تحميل بيانات الحساب: " + currentUser;
-
-      try {
-        const docRef = window.doc(window.db, "users", currentUser);
-        const docSnap = await window.getDoc(docRef);
-
-        if (docSnap.exists()) {
-          tasks = docSnap.data().tasks || [];
-          document.getElementById('userStatus').innerText = "✅ مرحباً بك! تم إيجاد بياناتك وتحميلها.";
-        } else {
-          tasks = [];
-          document.getElementById('userStatus').innerText = "🆕 حساب جديد، تم إنشاؤه بنجاح.";
-        }
-        renderTasks();
-      } catch (e) {
-        console.error(e);
-        document.getElementById('userStatus').innerText = "❌ حدث خطأ أثناء الاتصال بقاعدة البيانات.";
+      const user = prompt("أدخل اسم المستخدم الخاص بك:", currentUser);
+      if (user) {
+        currentUser = user;
+        alert("أهلاً بك " + currentUser);
+        loadTasks();
       }
     }
 
-    // إضافة مهمة وحفظها سحابياً
-    async function addTask() {
-      if (!currentUser) {
-        alert("يرجى تسجيل الدخول باسم المستخدم أولاً!");
-        return;
+    async function loadTasks() {
+      try {
+        const docRef = window.doc(window.db, "users", currentUser);
+        const docSnap = await window.getDoc(docRef);
+        if (docSnap.exists()) {
+          tasks = docSnap.data().tasks || [];
+          renderTasks();
+        }
+      } catch (e) {
+        console.error("خطأ في التحميل:", e);
       }
+    }
+
+    async function addTask() {
       const subject = document.getElementById('taskSubject').value;
       const date = document.getElementById('taskDate').value;
-
       if (!subject || !date) {
-        alert("يرجى تعبئة جميع الحقول!");
+        alert("يرجى تعبئة المادة والتاريخ!");
         return;
       }
-
       tasks.push({ subject, date });
       renderTasks();
 
-      // حفظ في السحابة
       try {
         await window.setDoc(window.doc(window.db, "users", currentUser), { tasks: tasks });
       } catch (e) {
-        console.error("خطأ في الحفظ السحابي:", e);
+        console.error("خطأ في الحفظ:", e);
       }
 
       document.getElementById('taskSubject').value = "";
       document.getElementById('taskDate').value = "";
     }
 
-    // عرض القائمة
     function renderTasks() {
       const list = document.getElementById('taskList');
       list.innerHTML = "";
-      tasks.forEach((t, index) => {
-        list.innerHTML += `<li style="background: #2a2a3c; padding: 10px; margin-bottom: 8px; border-radius: 5px;">
-          📌 <strong>${t.subject}</strong> - التاريخ: ${t.date}
+      tasks.forEach(t => {
+        list.innerHTML += `<li style="background: #2a2a2a; padding: 8px; margin-bottom: 5px; border-radius: 6px; font-size: 13px;">
+          📌 ${t.subject} - <span style="color:#888;">${t.date}</span>
         </li>`;
       });
     }
 
-    // فتح وإغلاق نافذة Gemini
-    function openAiModal() {
-      document.getElementById('aiModal').style.display = 'flex';
-    }
+    function openAiModal() { document.getElementById('aiModal').style.display = 'flex'; }
+    function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; }
 
-    function closeAiModal() {
-      document.getElementById('aiModal').style.display = 'none';
-    }
-
-    // طلب الخطة من Gemini API
     async function generateAIPlan() {
       const subject = document.getElementById('aiSubject').value;
       const hours = document.getElementById('aiHours').value;
       const resultDiv = document.getElementById('aiResult');
 
       if (!subject || !hours) {
-        alert("يرجى كتابة المادة وعدد الساعات!");
+        alert("يرجى تعبئة المادة وعدد الساعات!");
         return;
       }
 
       resultDiv.style.display = "block";
-      resultDiv.innerHTML = "⏳ جاري تحضير خطتك الدراسية بواسطة Gemini...";
+      resultDiv.innerHTML = "⏳ جاري كتابة الخطة...";
 
-      const apiKey = AQ.Ab8RN6LgfN0GM1ZtuNRBLLV5UTw82duEJ-o-EaWwc1fag7lFcQ; // 🔴 ضع مفتاحك المجاني من Google AI Studio هنا
-      const prompt = `اعمل لي خطة دراسية منظمة ومقسمة لمادة ${subject}، أستطيع دراسة ${hours} ساعات يومياً. حدد لي الأهداف والمهام اليومية بشكل مختصر وواضح في نقاط.`;
+      const apiKey = "YOUR_GEMINI_API_KEY"; // 🔴 استبدل هذا بمفتاحك من Google AI Studio
+      const prompt = `اعمل لي خطة دراسية لمادة ${subject}، أستطيع دراسة ${hours} ساعات يومياً بشكل مقسم ومنظم.`;
 
       try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
         const data = await response.json();
         const aiResponse = data.candidates[0].content.parts[0].text;
-
         resultDiv.innerHTML = "<strong>📋 الخطة المقترحة:</strong><br><br>" + aiResponse;
-
       } catch (error) {
-        console.error(error);
-        resultDiv.innerHTML = "❌ حدث خطأ، تأكد من صحة المفتاح والاتصال بالإنترنت.";
+        resultDiv.innerHTML = "❌ حدث خطأ، تأكد من مفتاح الـ API.";
       }
     }
+
+    // تحميل المهام فور فتح الصفحة
+    window.onload = loadTasks;
   </script>
+
 </body>
 </html>
