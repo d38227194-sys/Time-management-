@@ -3,23 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منظم وقت الدراسة - المزامنة السحابية</title>
-  <!-- مكتبة Supabase للمزامنة -->
+  <title>منظم وقت الدراسة</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     * { box-sizing: border-box; font-family: Arial, sans-serif; }
     body { margin: 0; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #172554; }
     .container { max-width: 950px; margin: 25px auto; padding: 15px; }
     .card { background: white; padding: 22px; margin-bottom: 18px; border-radius: 18px; box-shadow: 0 5px 18px #0002; }
-    h1, h2 { text-align: center; }
-    h1 { color: #2563eb; }
+    h1, h2 { text-align: center; color: #2563eb; }
     label { display: block; margin: 12px 0 6px; font-weight: bold; }
     input, select, button { width: 100%; padding: 12px; border-radius: 9px; font-size: 15px; }
     input, select { border: 1px solid #aaa; }
     button { border: none; margin-top: 12px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; }
     button:hover { opacity: 0.9; }
-    .logout, .delete, .reset, .remove { background: #dc2626; }
+    .logout, .remove { background: #dc2626; }
     .pause { background: #f59e0b; }
     .resume { background: #16a34a; }
     .task { border: 1px solid #dbeafe; background: #f8fafc; padding: 15px; margin-top: 12px; border-radius: 12px; }
@@ -28,8 +25,6 @@
     .task-info { color: #475569; margin-top: 7px; line-height: 1.8; }
     .task-buttons { display: flex; gap: 8px; margin-top: 10px; }
     .task-buttons button { flex: 1; }
-    .start { background: #2563eb; }
-    .finish { background: #7c3aed; }
     .timer { text-align: center; font-size: 48px; font-weight: bold; color: #dc2626; margin: 18px; direction: ltr; }
     .timer-buttons { display: flex; gap: 10px; }
     .timer-buttons button { flex: 1; }
@@ -44,8 +39,7 @@
     .month-title { font-size: 22px; font-weight: bold; text-align: center; flex: 1; }
     .weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     .weekday { text-align: center; font-weight: bold; padding: 10px 3px; color: #475569; }
-    .calendar-day { min-height: 85px; background: #f8fafc; border: 1px solid #dbeafe; border-radius: 10px; padding: 8px; cursor: pointer; position: relative; transition: 0.2s; }
-    .calendar-day:hover { background: #eff6ff; transform: translateY(-2px); }
+    .calendar-day { min-height: 85px; background: #f8fafc; border: 1px solid #dbeafe; border-radius: 10px; padding: 8px; cursor: pointer; }
     .calendar-day.empty-day { background: transparent; border: none; cursor: default; }
     .day-number { font-weight: bold; font-size: 16px; }
     .day-tasks { margin-top: 7px; font-size: 12px; }
@@ -70,7 +64,7 @@
     <button onclick="login()">دخول واسترجاع البيانات ☁️</button>
   </div>
 
-  <!-- تطبيق الدراسة -->
+  <!-- التطبيق -->
   <div id="app" style="display:none;">
     <div class="card">
       <div class="welcome" id="welcomeText"></div>
@@ -143,397 +137,14 @@
 </div>
 
 <script>
-  // 🔴 استبدل القيمتين أسفله بالقيم الخاصة بمشروعك في Supabase
-  const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co"; 
-  const SUPABASE_KEY = "YOUR_ANON_KEY_HERE"; 
-  
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  let username = "";
-  let tasks = [];
-  let calendarTasks = [];
-  let timerInterval = null;
-  let remainingSeconds = 0;
-  let timerRunning = false;
-  let currentCalendarDate = new Date();
-  let selectedDate = null;
-
-  const singleTaskQuotes = ["عمل رائع! خطوة جديدة نحو القمة! 🚀🔥", "بطل! الإنجاز المستمر يقرّبك من أهدافك! 💪🌟", "ممتاز جداً! واصل هذا الحماس والتركيز! 🎉🎯"];
-  const dayFinishedQuotes = ["👑 يا لك من أسطورة! أنهيت جميع مهامك بنجاح! 🚀🔥", "🎉 إنجاز استثنائي اليوم! فخورون بك جداً! 💪✨"];
-
-  window.onload = function () {
-    const savedUsername = localStorage.getItem("studyUsername");
-    if (savedUsername) {
-      username = savedUsername;
-      openApp();
-    }
-  };
-
-  async function login() {
-    const input = document.getElementById("usernameInput");
-    const name = input.value.trim().toLowerCase();
-    if (!name) { alert("اكتب اسم مستخدم أولاً"); return; }
-    username = name;
-    localStorage.setItem("studyUsername", username);
-    openApp();
-  }
-
-  async function openApp() {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("app").style.display = "block";
-    document.getElementById("welcomeText").textContent = "أهلًا " + username + " 👋";
-    await loadCloudData();
-    showTasks();
-    renderCalendar();
-  }
-
-  function logout() {
-    username = ""; tasks = []; calendarTasks = [];
-    clearInterval(timerInterval);
-    localStorage.removeItem("studyUsername");
-    document.getElementById("app").style.display = "none";
-    document.getElementById("loginBox").style.display = "block";
-  }
-
-  // حفظ واسترجاع البيانات سحابياً
-  async function saveCloudData() {
-    if (!username) return;
-    document.getElementById("syncStatus").textContent = "🔄 جاري الحفظ في السحابة...";
-    const { error } = await supabase.from('user_data').upsert({
-      username: username,
-      tasks: tasks,
-      calendar_tasks: calendarTasks,
-      updated_at: new Date()
-    });
-    if (error) {
-      console.error("Error saving data:", error);
-      document.getElementById("syncStatus").textContent = "❌ حدث خطأ في الحفظ";
-    } else {
-      document.getElementById("syncStatus").textContent = "☁️ تم الحفظ والمزامنة بنجاح";
-    }
-  }
-
-  async function loadCloudData() {
-    if (!username) return;
-    document.getElementById("syncStatus").textContent = "🔄 جاري جلب البيانات من السحابة...";
-    const { data, error } = await supabase.from('user_data').select('*').eq('username', username).single();
-    if (data) {
-      tasks = data.tasks || [];
-      calendarTasks = data.calendar_tasks || [];
-    } else {
-      tasks = [];
-      calendarTasks = [];
-    }
-    document.getElementById("syncStatus").textContent = "☁️ البيانات متزامنة مع السحابة";
-  }
-
-  function updateProgressBar() {
-    const progressBar = document.getElementById("progressBar");
-    const progressText = document.getElementById("progressText");
-    const banner = document.getElementById("motivationalBanner");
-    if (!tasks || tasks.length === 0) {
-      progressBar.style.width = "0%";
-      progressText.textContent = "التقدم: 0%";
-      banner.style.display = "none";
-      return;
-    }
-    const doneCount = tasks.filter(t => t.done).length;
-    const percentage = Math.round((doneCount / tasks.length) * 100);
-    progressBar.style.width = percentage + "%";
-    progressText.textContent = "التقدم: " + percentage + "% (" + doneCount + "/" + tasks.length + " مهام)";
-    if (percentage === 100) {
-      banner.innerHTML = dayFinishedQuotes[Math.floor(Math.random() * dayFinishedQuotes.length)];
-      banner.style.display = "block";
-    } else { banner.style.display = "none"; }
-  }
-
-  function addTask() {
-    const name = document.getElementById("taskName").value.trim();
-    const type = document.getElementById("taskType").value;
-    const hours = Number(document.getElementById("taskHours").value);
-    const minutes = Number(document.getElementById("taskMinutes").value);
-    if (!name || (hours === 0 && minutes === 0)) { alert("أدخل اسم المهمة ومدة صحيحة"); return; }
-    tasks.push({ name, type, hours, minutes, totalSeconds: (hours * 3600) + (minutes * 60), done: false });
-    saveCloudData();
-    showTasks();
-    document.getElementById("taskName").value = "";
-  }
-
-  function showTasks() {
-    const box = document.getElementById("tasks");
-    updateProgressBar();
-    if (!box) return;
-    if (tasks.length === 0) { box.innerHTML = `<p class="empty">لم تضف أي مهام حتى الآن</p>`; return; }
-    box.innerHTML = "";
-    tasks.forEach((task, index) => {
-      const div = document.createElement("div");
-      div.className = task.done ? "task done" : "task";
-      div.innerHTML = `
-        <div class="task-title">${escapeHTML(task.name)}</div>
-        <div class="task-info">النوع: ${escapeHTML(task.type)} | المدة: ${task.hours}س و ${task.minutes}د</div>
-        <div class="task-buttons">
-          <button class="start" onclick="startTimer(${index})">▶️ ابدأ المؤقت</button>
-          <button class="finish" onclick="finishTask(${index})">✅ ${task.done ? "تم الإنجاز" : "إنهاء"}</button>
-          <button class="remove" onclick="deleteTask(${index})">🗑️ حذف</button>
-        </div>`;
-      box.appendChild(div);
-    });
-  }
-
-  function finishTask(index) {
-    if (!tasks[index]) return;
-    const wasDone = tasks[index].done;
-    tasks[index].done = true;
-    saveCloudData();
-    showTasks();
-    if (!wasDone) alert(singleTaskQuotes[Math.floor(Math.random() * singleTaskQuotes.length)]);
-  }
-
-  function deleteTask(index) {
-    if (!confirm("هل تريد حذف هذه المهمة؟")) return;
-    tasks.splice(index, 1);
-    saveCloudData();
-    showTasks();
-  }
-
-  function startTimer(index) {
-    clearInterval(timerInterval);
-    remainingSeconds = tasks[index].totalSeconds;
-    timerRunning = true;
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-      if (remainingSeconds > 0) {
-        remainingSeconds--;
-        updateTimerDisplay();
-      } else {
-        clearInterval(timerInterval);
-        alert("⏰ انتهى الوقت المحدد للمهمة!");
-        finishTask(index);
-      }
-    }, 1000);
-  }
-
-  function pauseTimer() { clearInterval(timerInterval); timerRunning = false; }
-  function resumeTimer() {
-    if (remainingSeconds > 0 && !timerRunning) {
-      timerRunning = true;
-      timerInterval = setInterval(() => {
-        if (remainingSeconds > 0) { remainingSeconds--; updateTimerDisplay(); }
-        else { clearInterval(timerInterval); alert("⏰ انتهى الوقت!"); }
-      }, 1000);
-    }
-  }
-  function resetTimer() { clearInterval(timerInterval); remainingSeconds = 0; timerRunning = false; updateTimerDisplay(); }
-
-  function updateTimerDisplay() {
-    const h = String(Math.floor(remainingSeconds / 3600)).padStart(2, '0');
-    const m = String(Math.floor((remainingSeconds % 3600) / 60)).padStart(2, '0');
-    const s = String(remainingSeconds % 60).padStart(2, '0');
-    document.getElementById("timer").textContent = `${h}:${m}:${s}`;
-  }
-
-  function renderCalendar() {
-    const grid = document.getElementById("calendarGrid");
-    const title = document.getElementById("monthTitle");
-    grid.innerHTML = "";
-    const year = currentCalendarDate.getFullYear();
-    const month = currentCalendarDate.getMonth();
-    title.textContent = currentCalendarDate.toLocaleDateString("ar-JO", { month: "long", year: "numeric" });
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    for (let i = 0; i < firstDay; i++) {
-      const empty = document.createElement("div"); empty.className = "calendar-day empty-day"; grid.appendChild(empty);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-      const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const div = document.createElement("div");
-      div.className = "calendar-day";
-      div.onclick = () => selectCalendarDate(year, month, day);
-      const dayTasks = calendarTasks.filter(t => t.date === key);
-      div.innerHTML = `<div class="day-number">${day}</div><div class="day-tasks">${dayTasks.slice(0, 2).map(t => `<div class="calendar-task">${t.title}</div>`).join('')}</div>`;
-      grid.appendChild(div);
-    }
-  }
-
-  function previousMonth() { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); }
-  function nextMonth() { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); }
-  function selectCalendarDate(y, m, d) {
-    selectedDate = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    document.getElementById("selectedDate").textContent = "📅 " + selectedDate;
-    document.getElementById("dateTaskForm").classList.add("active");
-    showCalendarTasks();
-  }
-
-  function addCalendarTask() {
-    const title = document.getElementById("calendarTaskName").value.trim();
-    if (!title) return;
-    calendarTasks.push({ id: Date.now(), date: selectedDate, title, done: false });
-    saveCloudData();
-    renderCalendar();
-    showCalendarTasks();
-    document.getElementById("calendarTaskName").value = "";
-  }
-
-  function showCalendarTasks() {
-    const box = document.getElementById("calendarTaskList");
-    const dayTasks = calendarTasks.filter(t => t.date === selectedDate);
-    box.innerHTML = dayTasks.map(t => `<div class="calendar-event">${t.title}</div>`).join('');
-  }
-
-  function escapeHTML(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منظم وقت الدراسة - المزامنة السحابية</title>
-  <!-- مكتبة Supabase للمزامنة -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { margin: 0; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #172554; }
-    .container { max-width: 950px; margin: 25px auto; padding: 15px; }
-    .card { background: white; padding: 22px; margin-bottom: 18px; border-radius: 18px; box-shadow: 0 5px 18px #0002; }
-    h1, h2 { text-align: center; }
-    h1 { color: #2563eb; }
-    label { display: block; margin: 12px 0 6px; font-weight: bold; }
-    input, select, button { width: 100%; padding: 12px; border-radius: 9px; font-size: 15px; }
-    input, select { border: 1px solid #aaa; }
-    button { border: none; margin-top: 12px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { opacity: 0.9; }
-    .logout, .delete, .reset, .remove { background: #dc2626; }
-    .pause { background: #f59e0b; }
-    .resume { background: #16a34a; }
-    .task { border: 1px solid #dbeafe; background: #f8fafc; padding: 15px; margin-top: 12px; border-radius: 12px; }
-    .task.done { opacity: 0.6; text-decoration: line-through; }
-    .task-title { font-weight: bold; font-size: 18px; }
-    .task-info { color: #475569; margin-top: 7px; line-height: 1.8; }
-    .task-buttons { display: flex; gap: 8px; margin-top: 10px; }
-    .task-buttons button { flex: 1; }
-    .start { background: #2563eb; }
-    .finish { background: #7c3aed; }
-    .timer { text-align: center; font-size: 48px; font-weight: bold; color: #dc2626; margin: 18px; direction: ltr; }
-    .timer-buttons { display: flex; gap: 10px; }
-    .timer-buttons button { flex: 1; }
-    .empty { text-align: center; color: #64748b; }
-    .welcome { text-align: center; color: #2563eb; font-size: 20px; font-weight: bold; }
-    .progress-box { margin-top: 15px; background: #e2e8f0; border-radius: 12px; overflow: hidden; height: 25px; position: relative; }
-    .progress-bar { background: linear-gradient(90deg, #16a34a, #22c55e); height: 100%; width: 0%; transition: width 0.4s ease; }
-    .progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 13px; color: #0f172a; }
-    .motivational-banner { margin-top: 10px; padding: 10px; background: #f0fdf4; border: 1px dashed #16a34a; border-radius: 10px; text-align: center; color: #15803d; font-weight: bold; display: none; }
-    .calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
-    .calendar-header button { width: auto; min-width: 90px; margin: 0; }
-    .month-title { font-size: 22px; font-weight: bold; text-align: center; flex: 1; }
-    .weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-    .weekday { text-align: center; font-weight: bold; padding: 10px 3px; color: #475569; }
-    .calendar-day { min-height: 85px; background: #f8fafc; border: 1px solid #dbeafe; border-radius: 10px; padding: 8px; cursor: pointer; position: relative; transition: 0.2s; }
-    .calendar-day:hover { background: #eff6ff; transform: translateY(-2px); }
-    .calendar-day.empty-day { background: transparent; border: none; cursor: default; }
-    .day-number { font-weight: bold; font-size: 16px; }
-    .day-tasks { margin-top: 7px; font-size: 12px; }
-    .calendar-task { background: #dbeafe; color: #1e40af; padding: 3px 5px; border-radius: 5px; margin-top: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .selected-date { text-align: center; background: #eff6ff; padding: 12px; border-radius: 10px; margin-top: 15px; font-weight: bold; }
-    .date-task-form { display: none; margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; }
-    .date-task-form.active { display: block; }
-    .calendar-task-list { margin-top: 15px; }
-    .calendar-event { background: white; border: 1px solid #dbeafe; padding: 12px; border-radius: 10px; margin-top: 8px; }
-    .sync-status { font-size: 13px; text-align: center; margin-top: 8px; color: #2563eb; font-weight: bold; }
-    footer { text-align: center; margin: 25px 0; padding: 15px; color: #64748b; font-size: 14px; }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <!-- تسجيل الدخول -->
-  <div class="card" id="loginBox">
-    <h1>📚 منظم وقت الدراسة</h1>
-    <p style="text-align:center">ادخل اسم المستخدم لمزامنة واسترجاع جميع بياناتك سحابياً</p>
-    <input id="usernameInput" placeholder="اكتب اسمك هنا (مثلاً: Ammar)">
-    <button onclick="login()">دخول واسترجاع البيانات ☁️</button>
-  </div>
-
-  <!-- تطبيق الدراسة -->
-  <div id="app" style="display:none;">
-    <div class="card">
-      <div class="welcome" id="welcomeText"></div>
-      <div class="sync-status" id="syncStatus">☁️ البيانات متزامنة مع السحابة</div>
-      <div class="progress-box">
-        <div class="progress-bar" id="progressBar"></div>
-        <div class="progress-text" id="progressText">التقدم: 0%</div>
-      </div>
-      <div class="motivational-banner" id="motivationalBanner"></div>
-      <button class="logout" onclick="logout()">تسجيل الخروج</button>
-    </div>
-
-    <!-- الروزنامة -->
-    <div class="card">
-      <h2>📅 روزنامة الدراسة</h2>
-      <div class="calendar-header">
-        <button onclick="previousMonth()">◀ السابق</button>
-        <div class="month-title" id="monthTitle"></div>
-        <button onclick="nextMonth()">التالي ▶</button>
-      </div>
-      <div class="weekdays">
-        <div class="weekday">الأحد</div><div class="weekday">الإثنين</div><div class="weekday">الثلاثاء</div>
-        <div class="weekday">الأربعاء</div><div class="weekday">الخميس</div><div class="weekday">الجمعة</div><div class="weekday">السبت</div>
-      </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-      <div class="selected-date" id="selectedDate">اضغط على أي يوم لإضافة شيء</div>
-      <div class="date-task-form" id="dateTaskForm">
-        <label>اسم المهمة أو الموعد</label>
-        <input id="calendarTaskName" placeholder="مثلاً: اختبار الرياضيات">
-        <button onclick="addCalendarTask()">➕ إضافة إلى هذا اليوم</button>
-      </div>
-      <div class="calendar-task-list" id="calendarTaskList"></div>
-    </div>
-
-    <!-- إضافة مهمة -->
-    <div class="card">
-      <h2>➕ إضافة مهمة دراسية</h2>
-      <label>اسم المادة أو المهمة</label>
-      <input id="taskName" placeholder="مثلاً: رياضيات - حل الواجب">
-      <label>نوع المهمة</label>
-      <select id="taskType">
-        <option>مذاكرة</option><option>واجب</option><option>مراجعة</option><option>اختبار</option><option>قراءة</option>
-      </select>
-      <label>عدد الساعات</label>
-      <input id="taskHours" type="number" min="0" value="0">
-      <label>عدد الدقائق</label>
-      <input id="taskMinutes" type="number" min="0" max="59" value="0">
-      <button onclick="addTask()">إضافة المهمة</button>
-    </div>
-
-    <!-- المؤقت -->
-    <div class="card">
-      <h2>⏱️ المؤقت</h2>
-      <div class="timer" id="timer">00:00:00</div>
-      <div class="timer-buttons">
-        <button class="pause" onclick="pauseTimer()">⏸️ إيقاف مؤقت</button>
-        <button class="resume" onclick="resumeTimer()">▶️ إعادة تشغيل</button>
-        <button class="reset" onclick="resetTimer()">🔄 إعادة ضبط</button>
-      </div>
-    </div>
-
-    <!-- المهام -->
-    <div class="card">
-      <h2>📝 مهامي الدراسية</h2>
-      <div id="tasks"><p class="empty">جاري تحميل المهام...</p></div>
-    </div>
-  </div>
-
-  <footer>Developed by Ammar Al-Haddar</footer>
-</div>
-
-<script>
-  // 🔴 استبدل القيمتين أسفله بالقيم الخاصة بمشروعك في Supabase
-  const SUPABASE_URL = "https://wiemavlvgrzknxygtjvs.supabase.co"; 
+  // بيانات Supabase
+  const SUPABASE_URL = "https://d38227194-sys.supabase.co"; 
   const SUPABASE_KEY = "sb_publishable_eZorO7uQgRM9k5jh5jtAvw_HghsddFt"; 
   
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let supabase = null;
+  if (typeof window.supabase !== "undefined") {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
 
   let username = "";
   let tasks = [];
@@ -544,9 +155,6 @@
   let currentCalendarDate = new Date();
   let selectedDate = null;
 
-  const singleTaskQuotes = ["عمل رائع! خطوة جديدة نحو القمة! 🚀🔥", "بطل! الإنجاز المستمر يقرّبك من أهدافك! 💪🌟", "ممتاز جداً! واصل هذا الحماس والتركيز! 🎉🎯"];
-  const dayFinishedQuotes = ["👑 يا لك من أسطورة! أنهيت جميع مهامك بنجاح! 🚀🔥", "🎉 إنجاز استثنائي اليوم! فخورون بك جداً! 💪✨"];
-
   window.onload = function () {
     const savedUsername = localStorage.getItem("studyUsername");
     if (savedUsername) {
@@ -555,7 +163,7 @@
     }
   };
 
-  async function login() {
+  function login() {
     const input = document.getElementById("usernameInput");
     const name = input.value.trim().toLowerCase();
     if (!name) { alert("اكتب اسم مستخدم أولاً"); return; }
@@ -564,11 +172,11 @@
     openApp();
   }
 
-  async function openApp() {
+  function openApp() {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("app").style.display = "block";
     document.getElementById("welcomeText").textContent = "أهلًا " + username + " 👋";
-    await loadCloudData();
+    loadCloudData();
     showTasks();
     renderCalendar();
   }
@@ -581,9 +189,8 @@
     document.getElementById("loginBox").style.display = "block";
   }
 
-  // حفظ واسترجاع البيانات سحابياً
   async function saveCloudData() {
-    if (!username) return;
+    if (!username || !supabase) return;
     document.getElementById("syncStatus").textContent = "🔄 جاري الحفظ في السحابة...";
     const { error } = await supabase.from('user_data').upsert({
       username: username,
@@ -592,7 +199,6 @@
       updated_at: new Date()
     });
     if (error) {
-      console.error("Error saving data:", error);
       document.getElementById("syncStatus").textContent = "❌ حدث خطأ في الحفظ";
     } else {
       document.getElementById("syncStatus").textContent = "☁️ تم الحفظ والمزامنة بنجاح";
@@ -600,15 +206,14 @@
   }
 
   async function loadCloudData() {
-    if (!username) return;
-    document.getElementById("syncStatus").textContent = "🔄 جاري جلب البيانات من السحابة...";
+    if (!username || !supabase) return;
+    document.getElementById("syncStatus").textContent = "🔄 جاري جلب البيانات...";
     const { data, error } = await supabase.from('user_data').select('*').eq('username', username).single();
     if (data) {
       tasks = data.tasks || [];
       calendarTasks = data.calendar_tasks || [];
-    } else {
-      tasks = [];
-      calendarTasks = [];
+      showTasks();
+      renderCalendar();
     }
     document.getElementById("syncStatus").textContent = "☁️ البيانات متزامنة مع السحابة";
   }
@@ -616,21 +221,15 @@
   function updateProgressBar() {
     const progressBar = document.getElementById("progressBar");
     const progressText = document.getElementById("progressText");
-    const banner = document.getElementById("motivationalBanner");
     if (!tasks || tasks.length === 0) {
       progressBar.style.width = "0%";
       progressText.textContent = "التقدم: 0%";
-      banner.style.display = "none";
       return;
     }
     const doneCount = tasks.filter(t => t.done).length;
     const percentage = Math.round((doneCount / tasks.length) * 100);
     progressBar.style.width = percentage + "%";
     progressText.textContent = "التقدم: " + percentage + "% (" + doneCount + "/" + tasks.length + " مهام)";
-    if (percentage === 100) {
-      banner.innerHTML = dayFinishedQuotes[Math.floor(Math.random() * dayFinishedQuotes.length)];
-      banner.style.display = "block";
-    } else { banner.style.display = "none"; }
   }
 
   function addTask() {
@@ -668,11 +267,9 @@
 
   function finishTask(index) {
     if (!tasks[index]) return;
-    const wasDone = tasks[index].done;
     tasks[index].done = true;
     saveCloudData();
     showTasks();
-    if (!wasDone) alert(singleTaskQuotes[Math.floor(Math.random() * singleTaskQuotes.length)]);
   }
 
   function deleteTask(index) {
