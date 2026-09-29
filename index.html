@@ -1,1746 +1,1119 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منظم وقت الدراسة</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عرض التكنولوجيا الحديثة التفاعلي</title>
+<style>
+:root {
+    --navy-dark: #0b2545;
+    --navy-medium: #134074;
+    --navy-light: #8da9c4;
+    --bg-color: #020914;
+    --cyan: #00f2fe;
+    --blue: #0072ff;
+    --text-color: #172033;
+}
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+/* =========================
+   GENERAL
+========================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
 
-    body {
-      margin: 0;
-      background: linear-gradient(135deg, #eff6ff, #dbeafe);
-      color: #172554;
-    }
+body {
+    background: #020914;
+    color: var(--text-color);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
 
-    .container {
-      max-width: 950px;
-      margin: 25px auto;
-      padding: 15px;
-    }
+/* =========================
+   PROGRESS TRACKER BAR
+========================= */
+.progress-container {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    height: 8px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
 
-    .card {
-      background: white;
-      padding: 22px;
-      margin-bottom: 18px;
-      border-radius: 18px;
-      box-shadow: 0 5px 18px #0002;
-    }
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00f2fe, #0072ff, #38ef7d);
+    box-shadow: 0 0 10px #00f2fe;
+    transition: width 0.4s ease;
+}
 
-    h1, h2 {
-      text-align: center;
-    }
+/* =========================
+   MOTIVATION TOAST NOTIFICATION
+========================= */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: rgba(3, 15, 27, 0.95);
+    border: 2px solid var(--cyan);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 30px;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+    z-index: 9999;
+    font-size: 15px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    pointer-events: none;
+}
 
-    h1 {
-      color: #2563eb;
-    }
+.toast-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
 
-    label {
-      display: block;
-      margin: 12px 0 6px;
-      font-weight: bold;
-    }
+/* =========================
+   MATRIX BACKGROUND
+========================= */
+#matrixBackground {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+}
 
-    input,
-    select,
-    button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 9px;
-      font-size: 15px;
-    }
+.matrix-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 9, 20, 0.48);
+    z-index: -1;
+    pointer-events: none;
+}
 
-    input,
-    select {
-      border: 1px solid #aaa;
-    }
+/* =========================
+   LOADING SCREEN
+========================= */
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0, 114, 255, 0.16), rgba(2, 9, 20, 0.98) 65%);
+    z-index: 9998;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    overflow: hidden;
+}
 
-    button {
-      border: none;
-      margin-top: 12px;
-      background: #2563eb;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
+#loadingScreen.show {
+    opacity: 1;
+    visibility: visible;
+}
 
-    button:hover {
-      opacity: 0.9;
-    }
+#loadingMatrix {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.7;
+}
 
-    .logout,
-    .delete,
-    .reset {
-      background: #dc2626;
-    }
+.loading-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 35px 50px;
+    border: 1px solid rgba(0,242,254,0.35);
+    border-radius: 22px;
+    background: rgba(2, 14, 28, 0.88);
+    box-shadow: 0 0 30px rgba(0,242,254,0.12), inset 0 0 25px rgba(0,114,255,0.06);
+    backdrop-filter: blur(5px);
+}
 
-    .pause {
-      background: #f59e0b;
-    }
+.loading-title {
+    color: white;
+    font-size: 27px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px var(--cyan), 0 0 25px rgba(0,242,254,0.6);
+}
 
-    .resume {
-      background: #16a34a;
-    }
+.loading-text {
+    color: var(--cyan);
+    font-size: 15px;
+    font-family: monospace;
+    letter-spacing: 2px;
+    min-width: 180px;
+}
 
-    .task {
-      border: 1px solid #dbeafe;
-      background: #f8fafc;
-      padding: 15px;
-      margin-top: 12px;
-      border-radius: 12px;
-    }
+.loading-dots {
+    display: inline-block;
+    width: 35px;
+    text-align: left;
+}
 
-    .task.done {
-      opacity: 0.6;
-      text-decoration: line-through;
-    }
+.loading-bar {
+    width: 220px;
+    height: 4px;
+    margin: 20px auto 0;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    overflow: hidden;
+}
 
-    .task-title {
-      font-weight: bold;
-      font-size: 18px;
-    }
+.loading-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    box-shadow: 0 0 12px var(--cyan);
+    animation: loadingProgress 0.75s ease forwards;
+}
 
-    .task-info {
-      color: #475569;
-      margin-top: 7px;
-      line-height: 1.8;
-    }
+@keyframes loadingProgress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
 
-    .task-buttons {
-      display: flex;
-      gap: 8px;
-    }
+/* =========================
+   HEADER
+========================= */
+header {
+    width: 100%;
+    padding: 28px 15px 20px;
+    text-align: center;
+    background: rgba(3, 15, 27, 0.92);
+    border-bottom: 1px solid rgba(0,242,254,0.22);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.6), 0 0 20px rgba(0,242,254,0.05);
+    position: relative;
+    z-index: 5;
+}
 
-    .task-buttons button {
-      flex: 1;
-    }
+header h1 {
+    color: white;
+    font-size: clamp(21px, 4vw, 32px);
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px var(--cyan), 0 0 25px rgba(0,242,254,0.35);
+}
 
-    .start {
-      background: #2563eb;
-    }
+header p {
+    color: var(--navy-light);
+    font-size: 14px;
+}
 
-    .finish {
-      background: #7c3aed;
-    }
+/* =========================
+   PROGRESS STATUS TEXT
+========================= */
+.progress-status {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #38ef7d;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
 
-    .timer {
-      text-align: center;
-      font-size: 48px;
-      font-weight: bold;
-      color: #dc2626;
-      margin: 18px;
-      direction: ltr;
-    }
+/* =========================
+   NAVIGATION DOTS
+========================= */
+.nav-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 15px;
+    position: relative;
+    z-index: 5;
+}
 
-    .timer-buttons {
-      display: flex;
-      gap: 10px;
-    }
+.dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #334155;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .timer-buttons button {
-      flex: 1;
-    }
+.dot:hover {
+    transform: scale(1.15);
+}
 
-    .empty {
-      text-align: center;
-      color: #64748b;
-    }
+.dot.active {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan), 0 0 18px rgba(0,242,254,0.65);
+    transform: scale(1.35);
+}
 
-    .welcome {
-      text-align: center;
-      color: #2563eb;
-      font-size: 20px;
-      font-weight: bold;
-    }
+/* =========================
+   MAIN
+========================= */
+.main-container {
+    width: 92%;
+    max-width: 900px;
+    margin: 0 auto 25px;
+    position: relative;
+    min-height: 560px;
+    z-index: 2;
+}
 
-    /* =========================
-       الروزنامة
-    ========================= */
+/* =========================
+   CARDS
+========================= */
+.card {
+    display: none;
+    background: rgba(255,255,255,0.97);
+    border-radius: 20px;
+    padding: 32px;
+    min-height: 540px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.5), 0 0 20px rgba(0,242,254,0.07);
+    border-top: 5px solid var(--navy-medium);
+    overflow: hidden;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+}
 
-    .calendar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
+.card.active {
+    display: block;
+    animation: pageEnter 0.55s ease forwards;
+}
 
-    .calendar-header button {
-      width: auto;
-      min-width: 90px;
-      margin: 0;
-    }
+@keyframes pageEnter {
+    0% { opacity: 0; transform: translateY(20px) scale(0.98); }
+    60% { opacity: 1; transform: translateY(-3px) scale(1.005); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-    .month-title {
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-      flex: 1;
-    }
+/* =========================
+   CARD HEADER
+========================= */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+    margin-bottom: 22px;
+}
 
-    .weekdays,
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
-    }
+.card-title {
+    color: var(--navy-dark);
+    font-size: clamp(19px, 3vw, 25px);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+}
 
-    .weekday {
-      text-align: center;
-      font-weight: bold;
-      padding: 10px 3px;
-      color: #475569;
-    }
+.card-badge {
+    background: var(--navy-dark);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+}
 
-    .calendar-day {
-      min-height: 85px;
-      background: #f8fafc;
-      border: 1px solid #dbeafe;
-      border-radius: 10px;
-      padding: 8px;
-      cursor: pointer;
-      position: relative;
-      transition: 0.2s;
-    }
+/* =========================
+   TEXT
+========================= */
+.original-text {
+    background: #f8fafc;
+    border-right: 4px solid var(--navy-medium);
+    padding: 16px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.9;
+    margin-bottom: 20px;
+    color: #334155;
+    text-align: center;
+}
 
-    .calendar-day:hover {
-      background: #eff6ff;
-      transform: translateY(-2px);
-    }
+.detailed-explanation {
+    background: #eef4f8;
+    border-radius: 12px;
+    padding: 22px;
+    font-size: 15px;
+    line-height: 2;
+    color: #0f172a;
+    text-align: center;
+}
 
-    .calendar-day.empty-day {
-      background: transparent;
-      border: none;
-      cursor: default;
-    }
+.explanation-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    color: var(--navy-dark);
+    font-size: 18px;
+    margin-bottom: 12px;
+}
 
-    .calendar-day.today {
-      border: 2px solid #2563eb;
-    }
+.detailed-explanation ul,
+.detailed-explanation ol {
+    text-align: right;
+    max-width: 700px;
+    margin: 12px auto;
+}
 
-    .day-number {
-      font-weight: bold;
-      font-size: 16px;
-    }
+.detailed-explanation li {
+    margin-bottom: 8px;
+}
 
-    .day-tasks {
-      margin-top: 7px;
-      font-size: 12px;
-    }
+/* =========================
+   TABLE
+========================= */
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px auto 5px;
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+}
 
-    .calendar-task {
-      background: #dbeafe;
-      color: #1e40af;
-      padding: 3px 5px;
-      border-radius: 5px;
-      margin-top: 3px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
+.comparison-table th {
+    background: var(--navy-dark);
+    color: white;
+    padding: 12px;
+    text-align: center;
+}
 
-    .calendar-task.done {
-      background: #dcfce7;
-      color: #166534;
-      text-decoration: line-through;
-    }
+.comparison-table td {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    text-align: center;
+    line-height: 1.7;
+}
 
-    .selected-date {
-      text-align: center;
-      background: #eff6ff;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 15px;
-      font-weight: bold;
-    }
+/* =========================
+   AI LOGO
+========================= */
+.ai-logos-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    margin: 15px 0 25px;
+    padding: 18px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.05);
+}
 
-    .date-task-form {
-      display: none;
-      margin-top: 15px;
-      padding: 15px;
-      background: #f8fafc;
-      border-radius: 12px;
-    }
+.logo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
 
-    .date-task-form.active {
-      display: block;
-    }
+.animated-logo {
+    width: 58px;
+    height: 58px;
+    animation: float 3s ease-in-out infinite;
+}
 
-    .calendar-task-list {
-      margin-top: 15px;
-    }
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+    100% { transform: translateY(0); }
+}
 
-    .calendar-event {
-      background: white;
-      border: 1px solid #dbeafe;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 8px;
-    }
+/* =========================
+   WELCOME
+========================= */
+.hacker-card {
+    background: rgba(3,10,22,0.94) !important;
+    color: #00f2fe !important;
+    border-top: 5px solid #00f2fe !important;
+    min-height: 540px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
 
-    .calendar-event-title {
-      font-weight: bold;
-    }
+.hacker-card.active {
+    display: flex;
+}
 
-    .calendar-event-info {
-      color: #64748b;
-      font-size: 14px;
-      margin-top: 5px;
-    }
+.hacker-content {
+    position: relative;
+    z-index: 2;
+    background: rgba(3,10,22,0.88);
+    padding: 40px 30px;
+    border-radius: 18px;
+    border: 1px solid rgba(0,242,254,0.35);
+    box-shadow: 0 0 30px rgba(0,242,254,0.12);
+    width: 90%;
+    max-width: 700px;
+    text-align: center;
+}
 
-    .event-buttons {
-      display: flex;
-      gap: 7px;
-    }
+.hacker-title {
+    font-size: clamp(28px, 6vw, 45px);
+    font-weight: bold;
+    color: white;
+    margin-bottom: 18px;
+    text-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan);
+}
 
-    .event-buttons button {
-      flex: 1;
-    }
+.hacker-subtitle {
+    font-size: 16px;
+    color: #8da9c4;
+    line-height: 2;
+    margin-bottom: 28px;
+}
 
-    .event-delete {
-      background: #dc2626;
-    }
+.start-btn {
+    background: linear-gradient(45deg, #00f2fe, #0072ff);
+    color: #030a16;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,242,254,0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
 
-    .event-done {
-      background: #16a34a;
-    }
+.start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0,242,254,0.75);
+}
 
-    footer {
-      text-align: center;
-      margin: 25px 0;
-      padding: 15px;
-      color: #64748b;
-      font-size: 14px;
-    }
+/* =========================
+   THANK YOU & GRAND MOTIVATION
+========================= */
+.thankyou-card {
+    background: linear-gradient(135deg, rgba(11,37,69,0.96), rgba(19,64,116,0.96)) !important;
+    color: white !important;
+    min-height: 540px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
 
-    @media (max-width: 600px) {
+.thankyou-card.active {
+    display: flex;
+}
 
-      .task-buttons,
-      .timer-buttons,
-      .event-buttons {
-        flex-direction: column;
-      }
+.thankyou-box {
+    width: 90%;
+    max-width: 650px;
+    padding: 40px 25px;
+    border-radius: 20px;
+    border: 2px solid rgba(0,242,254,0.5);
+    background: rgba(2,15,30,0.72);
+    box-shadow: 0 0 30px rgba(0,242,254,0.18);
+    text-align: center;
+}
 
-      .timer {
-        font-size: 38px;
-      }
+.thankyou-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+}
 
-      .calendar-day {
-        min-height: 65px;
-        padding: 5px;
-      }
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
 
-      .day-number {
-        font-size: 14px;
-      }
+.thankyou-title {
+    font-size: clamp(28px, 6vw, 42px);
+    font-weight: bold;
+    margin-bottom: 18px;
+    color: white;
+    text-shadow: 0 0 15px var(--cyan), 0 0 30px rgba(0,242,254,0.5);
+}
 
-      .calendar-task {
-        font-size: 10px;
-      }
+.grand-motivation-box {
+    background: rgba(56, 239, 125, 0.1);
+    border: 1px solid #38ef7d;
+    border-radius: 12px;
+    padding: 18px;
+    margin: 20px 0;
+    color: #e2e8f0;
+    line-height: 1.9;
+    font-size: 15px;
+}
 
-      .weekday {
-        font-size: 12px;
-      }
+.grand-motivation-box span {
+    color: #38ef7d;
+    font-weight: bold;
+    font-size: 17px;
+}
 
-      .calendar-header button {
-        min-width: 70px;
-        padding: 9px;
-      }
+.names {
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 20px;
+    color: #00f2fe;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 2;
+}
 
-      .month-title {
-        font-size: 17px;
-      }
-    }
-  </style>
+.developer-tag {
+    margin-top: 20px;
+    padding-top: 15px;
+    font-size: 14px;
+    color: #8da9c4;
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+.navigation-controls {
+    width: 92%;
+    max-width: 900px;
+    margin: 0 auto 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    z-index: 5;
+}
+
+.nav-btn {
+    background: linear-gradient(135deg, #134074, #0b2545);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: #00f2fe;
+    color: #0b2545;
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0,242,254,0.6);
+}
+
+.nav-btn:disabled {
+    background: #1e293b;
+    color: #64748b;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+#pageIndicator {
+    color: var(--cyan);
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(0,242,254,0.6);
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 650px) {
+    .main-container { width: 94%; }
+    .card { padding: 20px; min-height: 570px; }
+    .detailed-explanation { padding: 16px; font-size: 14px; }
+    .comparison-table { font-size: 11px; }
+    .comparison-table th, .comparison-table td { padding: 7px; }
+    .navigation-controls { width: 94%; }
+    .nav-btn { padding: 10px 15px; font-size: 12px; }
+    .loading-content { padding: 30px 25px; }
+}
+
+body.loading {
+    overflow: hidden;
+}
+</style>
 </head>
-
 <body>
 
-<div class="container">
-
-  <!-- تسجيل الدخول -->
-  <div class="card" id="loginBox">
-
-    <h1>📚 منظم وقت الدراسة</h1>
-
-    <p style="text-align:center">
-      اكتب اسم مستخدم غير حقيقي للبدء
-    </p>
-
-    <input
-      id="usernameInput"
-      placeholder="مثلاً: Ahmad123"
-    >
-
-    <button onclick="login()">
-      دخول
-    </button>
-
-  </div>
-
-
-  <!-- التطبيق -->
-  <div id="app" style="display:none;">
-
-    <!-- الترحيب -->
-    <div class="card">
-
-      <div class="welcome" id="welcomeText"></div>
-
-      <button class="logout" onclick="logout()">
-        تسجيل الخروج
-      </button>
-
-    </div>
-
-
-    <!-- =========================
-         الروزنامة
-    ========================== -->
-
-    <div class="card">
-
-      <h2>📅 روزنامة الدراسة</h2>
-
-      <div class="calendar-header">
-
-        <button onclick="previousMonth()">
-          ◀ السابق
-        </button>
-
-        <div
-          class="month-title"
-          id="monthTitle">
-        </div>
-
-        <button onclick="nextMonth()">
-          التالي ▶
-        </button>
-
-      </div>
-
-
-      <!-- أيام الأسبوع -->
-
-      <div class="weekdays">
-
-        <div class="weekday">الأحد</div>
-        <div class="weekday">الإثنين</div>
-        <div class="weekday">الثلاثاء</div>
-        <div class="weekday">الأربعاء</div>
-        <div class="weekday">الخميس</div>
-        <div class="weekday">الجمعة</div>
-        <div class="weekday">السبت</div>
-
-      </div>
-
-
-      <!-- أيام الشهر -->
-
-      <div
-        class="calendar-grid"
-        id="calendarGrid">
-      </div>
-
-
-      <!-- التاريخ المختار -->
-
-      <div
-        class="selected-date"
-        id="selectedDate">
-        اضغط على أي يوم لإضافة شيء
-      </div>
-
-
-      <!-- إضافة حدث -->
-
-      <div
-        class="date-task-form"
-        id="dateTaskForm">
-
-        <label>اسم المهمة أو الموعد</label>
-
-        <input
-          id="calendarTaskName"
-          placeholder="مثلاً: اختبار الرياضيات"
-        >
-
-        <label>الوقت</label>
-
-        <input
-          id="calendarTaskTime"
-          type="time"
-        >
-
-        <label>ملاحظات</label>
-
-        <input
-          id="calendarTaskNote"
-          placeholder="مثلاً: مراجعة الفصل الثالث"
-        >
-
-        <button onclick="addCalendarTask()">
-          ➕ إضافة إلى هذا اليوم
-        </button>
-
-      </div>
-
-
-      <!-- مهام اليوم -->
-
-      <div
-        class="calendar-task-list"
-        id="calendarTaskList">
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         إضافة مهمة
-    ========================== -->
-
-    <div class="card">
-
-      <h2>➕ إضافة مهمة دراسية</h2>
-
-      <label>اسم المادة أو المهمة</label>
-
-      <input
-        id="taskName"
-        placeholder="مثلاً: رياضيات - حل الواجب"
-      >
-
-      <label>نوع المهمة</label>
-
-      <select id="taskType">
-
-        <option>مذاكرة</option>
-        <option>واجب</option>
-        <option>مراجعة</option>
-        <option>اختبار</option>
-        <option>قراءة</option>
-
-      </select>
-
-      <label>عدد الساعات</label>
-
-      <input
-        id="taskHours"
-        type="number"
-        min="0"
-        value="0"
-      >
-
-      <label>عدد الدقائق</label>
-
-      <input
-        id="taskMinutes"
-        type="number"
-        min="0"
-        max="59"
-        value="0"
-      >
-
-      <button onclick="addTask()">
-        إضافة المهمة
-      </button>
-
-    </div>
-
-
-    <!-- =========================
-         المؤقت
-    ========================== -->
-
-    <div class="card">
-
-      <h2>⏱️ المؤقت</h2>
-
-      <div
-        class="timer"
-        id="timer">
-        00:00:00
-      </div>
-
-      <div class="timer-buttons">
-
-        <button
-          class="pause"
-          onclick="pauseTimer()">
-          ⏸️ إيقاف مؤقت
-        </button>
-
-        <button
-          class="resume"
-          onclick="resumeTimer()">
-          ▶️ إعادة تشغيل
-        </button>
-
-        <button
-          class="reset"
-          onclick="resetTimer()">
-          🔄 إعادة ضبط
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         المهام
-    ========================== -->
-
-    <div class="card">
-
-      <h2>📝 مهامي الدراسية</h2>
-
-      <div id="tasks">
-
-        <p class="empty">
-          لم تضف أي مهام حتى الآن
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <footer>
-    Developed by Ammar Al-Haddar
-  </footer>
-
+<!-- TOP PROGRESS BAR -->
+<div class="progress-container">
+    <div class="progress-bar-fill" id="progressBarFill"></div>
 </div>
 
+<!-- MOTIVATION TOAST NOTIFICATION -->
+<div class="toast-notification" id="toastNotification">
+    <span id="toastIcon">✨</span>
+    <span id="toastMessage">عمل ممتاز! واصل التقدم</span>
+</div>
 
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+    <canvas id="loadingMatrix"></canvas>
+    <div class="loading-content">
+        <div class="loading-title">LOADING</div>
+        <div class="loading-text">SYSTEM INITIALIZING<span class="loading-dots" id="loadingDots">.</span></div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+    </div>
+</div>
+
+<!-- BACKGROUND MATRIX -->
+<canvas id="matrixBackground"></canvas>
+<div class="matrix-overlay"></div>
+
+<!-- HEADER -->
+<header>
+    <h1>شرح وسائِلِ التِّكنولوجيا الحَديثَة 🚀</h1>
+    <p>عرض تفاعلي شامل ومتطوّر لدروس التكنولوجيا</p>
+    <div class="progress-status" id="progressStatus">معدل الإنجاز: 0% 🎯</div>
+</header>
+
+<!-- DOTS -->
+<div class="nav-dots" id="dotsContainer"></div>
+
+<!-- MAIN CONTAINER -->
+<div class="main-container">
+    <!-- PAGE 1: WELCOME -->
+    <div class="card hacker-card active">
+        <div class="hacker-content">
+            <div class="hacker-title">التكنولوجيا الحديثة</div>
+            <div class="hacker-subtitle">
+                مرحباً بك في العرض التفاعلي الشامل.<br>
+                اكتشف عالم الأجهزة الذكية، الحوسبة السحابية، الذكاء الاصطناعي، والواقع الافتراضي وإنترنت الأشياء بأسلوب عصري وممتع.
+            </div>
+            <button class="start-btn" onclick="changePage(1)">ابدأ الاستكشاف 🚀</button>
+        </div>
+    </div>
+
+    <!-- PAGE 2: SMART DEVICES -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-badge">1</span> الأجهزة الذكية (Smart Devices)</h2>
+        </div>
+        <div class="original-text">
+            <strong>📝 النص الأصلي:</strong> أجهزة إلكترونية مجهزة بتقنيات حديثة تمكنها من الاتصال بشبكة الإنترنت وتبادل البيانات مع البيئة المحيطة، أو مع مستخدمين آخرين. وتمتاز بالقدرة على جمع البيانات وتحليلها واتخاذ قرارات ذكية بناءً عليها.
+        </div>
+        <div class="detailed-explanation">
+            <div class="explanation-title">💡 الشرح المُوسّع</div>
+            الأجهزة الذكية أصبحت تتجاوز مجرد كونها أدوات تنفذ أوامر بلمسة زر، فهي تعتمد على مجموعة من التقنيات التي تجعلها قادرة على فهم البيئة المحيطة والتفاعل معها.
+            <ul>
+                <li><strong>المستشعرات:</strong> تجمع البيانات مثل الحرارة والضوء والحركة.</li>
+                <li><strong>المعالجة الذكية:</strong> تحلل البيانات وتتعرف على الأنماط.</li>
+                <li><strong>الاتصال والتحكم:</strong> تتواصل مع الأجهزة الأخرى وتنفذ بعض العمليات تلقائياً.</li>
+            </ul>
+            <strong>أمثلة من حياتنا اليومية:</strong>
+            <ul>
+                <li>الساعات الذكية التي تتابع النشاط والحركة.</li>
+                <li>أنظمة المنازل الذكية التي تتحكم بالإضاءة والتكييف.</li>
+                <li>السيارات الحديثة التي تحتوي على أنظمة مساعدة للسائق.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- PAGE 3: CLOUD COMPUTING -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-badge">2</span> الحوسبة السحابية (Cloud Computing)</h2>
+        </div>
+        <div class="original-text">
+            <strong>📝 النص الأصلي:</strong> تقنية توفر خدمات حاسوبية عديدة عبر الإنترنت مثل الخوادم وقواعد البيانات والتخزين والبرمجيات والشبكات والذكاء الاصطناعي.
+        </div>
+        <div class="detailed-explanation">
+            <div class="explanation-title">💡 الشرح المُوسّع</div>
+            تخيل الحوسبة السحابية مثل شركة الكهرباء؛ بدلاً من بناء محطة كهرباء خاصة في منزلك، تحصل على الخدمة عبر الشبكة وتستخدم منها المقدار الذي تحتاجه.<br><br>
+            <strong>النماذج الرئيسية للحوسبة السحابية:</strong>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>النموذج</th>
+                        <th>الشرح</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SaaS</strong></td>
+                        <td>تطبيقات جاهزة للاستخدام عبر الإنترنت مثل Gmail وGoogle Docs.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PaaS</strong></td>
+                        <td>بيئة تساعد المطورين على بناء التطبيقات وتشغيلها.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IaaS</strong></td>
+                        <td>توفير خوادم ومساحات تخزين وشبكات افتراضية عبر الإنترنت.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGE 4: VR & AR -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-badge">3</span> الواقع الافتراضي والواقع المعزز (VR & AR)</h2>
+        </div>
+        <div class="original-text">
+            <strong>📝 النص الأصلي:</strong> تقنيات تفاعلية ثلاثية الأبعاد تقدم تجارب فريدة، ورغم وجود تشابه بينهما إلا أن لكل منهما خصائص واستخدامات مختلفة.
+        </div>
+        <div class="detailed-explanation">
+            <div class="explanation-title">💡 الشرح والمقارنة</div>
+            الفرق الأساسي بينهما هو طريقة تعامل التقنية مع العالم الحقيقي.
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>المعيار</th>
+                        <th>VR</th>
+                        <th>AR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>العزل</td>
+                        <td>ينقل المستخدم إلى عالم افتراضي.</td>
+                        <td>يضيف عناصر رقمية إلى العالم الحقيقي.</td>
+                    </tr>
+                    <tr>
+                        <td>الأدوات</td>
+                        <td>نظارات الواقع الافتراضي.</td>
+                        <td>الهواتف والكاميرات والنظارات الذكية.</td>
+                    </tr>
+                    <tr>
+                        <td>الاستخدام</td>
+                        <td>التدريب والألعاب والمحاكاة.</td>
+                        <td>التعليم والتصميم والصيانة.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGE 5: AI -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-badge">4</span> الذكاء الاصطناعي (Artificial Intelligence)</h2>
+        </div>
+        <div class="ai-logos-container">
+            <div class="logo-item">
+                <svg class="animated-logo gemini-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C12 6.62742 6.62742 12 0 12C6.62742 12 12 17.3726 12 24C12 17.3726 17.3726 12 24 12C17.3726 12 12 6.62742 12 0Z" fill="url(#gemini-grad)"/>
+                    <defs>
+                        <linearGradient id="gemini-grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#1A73E8"/>
+                            <stop offset="0.5" stop-color="#8AB4F8"/>
+                            <stop offset="1" stop-color="#A142F4"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span style="font-size:10pt; font-weight:bold; color:#1a73e8;">Gemini</span>
+            </div>
+        </div>
+        <div class="original-text">
+            <strong>📝 النص الأصلي:</strong> نظام حاسوبي قادر على محاكاة بعض قدرات الذكاء البشري مثل والتفكير والتعلم وحل المشكلات.
+        </div>
+        <div class="detailed-explanation">
+            <div class="explanation-title">💡 الشرح المُوسّع</div>
+            يعتمد الذكاء الاصطناعي على خوارزميات قادرة على تحليل البيانات والتعرف على الأنماط والتعامل مع المشكلات.
+            <ul>
+                <li><strong>التعلم الآلي:</strong> يتعلم النظام من البيانات.</li>
+                <li><strong>التعلم العميق:</strong> يستخدم شبكات عصبية اصطناعية لمعالجة البيانات المعقدة.</li>
+                <li><strong>الذكاء الاصطناعي التوليدي:</strong> يمكنه إنشاء النصوص والصور والأكواد وغيرها.</li>
+            </ul>
+            <div style="background:#fef2f2; border-right:4px solid #ef4444; padding:12px 15px; border-radius:8px; margin-top:18px; color:#991b1b;">
+                <strong>⚠️ ملاحظة:</strong> قد تقدم أنظمة الذكاء الاصطناعي أحياناً معلومات غير صحيحة، لذلك من المهم مراجعة المعلومات والتحقق من المصادر.
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 6: IOT -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-badge">5</span> إنترنت الأشياء (Internet of Things - IoT)</h2>
+        </div>
+        <div class="original-text">
+            <strong>📝 النص الأصلي:</strong> شبكة من الأجهزة الذكية المرتبطة بالإنترنت لمشاركة البيانات والموارد والتفاعل مع بعضها البعض.
+        </div>
+        <div class="detailed-explanation">
+            <div class="explanation-title">💡 الشرح المُوسّع</div>
+            فكرة إنترنت الأشياء هي ربط الأشياء والأجهزة بالإنترنت حتى تتمكن من جمع البيانات وإرسالها واستقبال الأوامر.<br><br>
+            <strong>كيف يعمل إنترنت الأشياء؟</strong>
+            <ol>
+                <li><strong>جمع البيانات:</strong> تقوم المستشعرات بجمع المعلومات.</li>
+                <li><strong>نقل البيانات:</strong> ترسل الأجهزة البيانات عبر الشبكة.</li>
+                <li><strong>المعالجة:</strong> يتم تحليل البيانات.</li>
+                <li><strong>اتخاذ الإجراء:</strong> يمكن للجهاز تنفيذ إجراء تلقائي.</li>
+            </ol>
+            <div style="background:#f0fdf4; border-right:4px solid #22c55e; padding:12px 15px; border-radius:8px; margin-top:18px; color:#166534;">
+                <strong>📜 مثال:</strong> يمكن للمنزل الذكي تشغيل الإضاءة أو تعديل درجة الحرارة تلقائياً اعتماداً على البيانات التي تجمعها الأجهزة.
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 7: THANK YOU & GRAND MOTIVATION -->
+    <div class="card thankyou-card">
+        <div class="thankyou-box">
+            <div class="thankyou-icon">🏆🔥🎉</div>
+            <div class="thankyou-title">أبدعت! اكتملت المهمة بنجاح</div>
+            
+            <div class="grand-motivation-box">
+                <span>🌟 إنجاز استثنائي اليوم! 🌟</span><br>
+                لقد أنهيت دراسة ومراجعة جميع دروس التكنولوجيا الحديثة بنجاح %100! <br>
+                استمر بهذا الشغف والاجتهاد، المستقبل المشرق بانتظارك دائماً يا بطل! 💪🚀
+            </div>
+
+            <div class="names">
+                إعداد<br>
+                عمار فؤاد الهدار<br>
+                هاشم العمريين
+            </div>
+            <div class="developer-tag">
+                Developed by Ammar Al-Haddar
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAVIGATION CONTROLS -->
+<div class="navigation-controls">
+    <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>❮ الصفحة السابقة</button>
+    <span id="pageIndicator">1 / 7</span>
+    <button class="nav-btn" id="nextBtn" onclick="changePage(1)">الصفحة التالية ❯</button>
+</div>
+
+<!-- JAVASCRIPT -->
 <script>
+let currentCardIndex = 0;
+let isLoading = false;
+let isAuthenticated = false;
 
-  let username = "";
-  let tasks = [];
+const cards = document.querySelectorAll(".card");
+const dotsContainer = document.getElementById("dotsContainer");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const pageIndicator = document.getElementById("pageIndicator");
+const loadingScreen = document.getElementById("loadingScreen");
+const loadingProgress = document.getElementById("loadingProgress");
+const loadingDots = document.getElementById("loadingDots");
+const progressBarFill = document.getElementById("progressBarFill");
+const progressStatus = document.getElementById("progressStatus");
+const toastNotification = document.getElementById("toastNotification");
+const toastIcon = document.getElementById("toastIcon");
+const toastMessage = document.getElementById("toastMessage");
 
-  let calendarTasks = [];
+/* MOTIVATION MESSAGES FOR EACH COMPLETED TASK */
+const motivations = [
+    { icon: "🚀", text: "بداية ممتازة! انطلقت رحلة التعلم." },
+    { icon: "💡", text: "كفو! أتقنت مفهوم الأجهزة الذكية بنجاح." },
+    { icon: "☁️", text: "رائع جداً! أصبحت تفهم الحوسبة السحابية بسهولة." },
+    { icon: "🥽", text: "ممتاز! استوعبت الفرق بين الواقع الافتراضي والمعزز." },
+    { icon: "🤖", text: "إنجاز رائع! فهمت أسرار الذكاء الاصطناعي." },
+    { icon: "🌐", text: "بطل! أنهيت دراسة إنترنت الأشياء بذكاء." },
+    { icon: "👑", text: "ألف مبروك! أتممت العرض والمراجعة بالكامل %100!" }
+];
 
-  let timerInterval = null;
-  let remainingSeconds = 0;
-  let timerRunning = false;
-  let currentTaskIndex = null;
-
-  let currentCalendarDate = new Date();
-  let selectedDate = null;
-
-
-  /* =========================
-     تشغيل الموقع
-  ========================== */
-
-  window.onload = function () {
-
-    const savedUsername =
-      localStorage.getItem("studyUsername");
-
-    if (savedUsername) {
-
-      username = savedUsername;
-
-      openApp();
-
+/* PASSWORD VERIFICATION SYSTEM */
+function checkPassword() {
+    if (isAuthenticated) return true;
+    
+    const userInput = prompt("Please enter the password to access the presentation:");
+    if (userInput === "tami") {
+        isAuthenticated = true;
+        return true;
+    } else {
+        alert("Incorrect Password! Access Denied.");
+        return false;
     }
-
-  };
-
-
-  /* =========================
-     تسجيل الدخول
-  ========================== */
-
-  function login() {
-
-    const input =
-      document.getElementById("usernameInput");
-
-    const name =
-      input.value.trim();
-
-    if (!name) {
-
-      alert("اكتب اسم مستخدم أولاً");
-
-      return;
-
-    }
-
-    username = name;
-
-    localStorage.setItem(
-      "studyUsername",
-      username
-    );
-
-    openApp();
-
-  }
-
-
-  /* =========================
-     فتح التطبيق
-  ========================== */
-
-  function openApp() {
-
-    document.getElementById("loginBox")
-      .style.display = "none";
-
-    document.getElementById("app")
-      .style.display = "block";
-
-    document.getElementById("welcomeText")
-      .textContent =
-      "أهلًا " + username + " 👋";
-
-    loadTasks();
-    loadCalendarTasks();
-
-    showTasks();
-    renderCalendar();
-
-  }
-
-
-  /* =========================
-     تسجيل الخروج
-  ========================== */
-
-  function logout() {
-
-    saveTasks();
-    saveCalendarTasks();
-
-    username = "";
-    tasks = [];
-    calendarTasks = [];
-
-    clearInterval(timerInterval);
-
-    remainingSeconds = 0;
-    timerRunning = false;
-    currentTaskIndex = null;
-
-    document.getElementById("timer")
-      .textContent = "00:00:00";
-
-    localStorage.removeItem(
-      "studyUsername"
-    );
-
-    document.getElementById("app")
-      .style.display = "none";
-
-    document.getElementById("loginBox")
-      .style.display = "block";
-
-    document.getElementById("usernameInput")
-      .value = "";
-
-    showTasks();
-
-  }
-
-
-  /* =========================
-     مفاتيح التخزين
-  ========================== */
-
-  function getStorageKey() {
-
-    return "studyTasks_" + username;
-
-  }
-
-  function getCalendarStorageKey() {
-
-    return "studyCalendar_" + username;
-
-  }
-
-
-  /* =========================
-     المهام العادية
-  ========================== */
-
-  function saveTasks() {
-
-    if (!username) return;
-
-    localStorage.setItem(
-      getStorageKey(),
-      JSON.stringify(tasks)
-    );
-
-  }
-
-
-  function loadTasks() {
-
-    tasks =
-      JSON.parse(
-        localStorage.getItem(
-          getStorageKey()
-        )
-      ) || [];
-
-  }
-
-
-  function addTask() {
-
-    const name =
-      document.getElementById("taskName")
-        .value.trim();
-
-    const type =
-      document.getElementById("taskType")
-        .value;
-
-    const hours =
-      Number(
-        document.getElementById("taskHours")
-          .value
-      );
-
-    const minutes =
-      Number(
-        document.getElementById("taskMinutes")
-          .value
-      );
-
-    if (
-      !name ||
-      hours < 0 ||
-      minutes < 0 ||
-      minutes > 59 ||
-      (hours === 0 && minutes === 0)
-    ) {
-
-      alert("أدخل اسم المهمة ومدة صحيحة");
-
-      return;
-
-    }
-
-    const totalSeconds =
-      (hours * 60 * 60) +
-      (minutes * 60);
-
-    tasks.push({
-
-      name: name,
-      type: type,
-      hours: hours,
-      minutes: minutes,
-      totalSeconds: totalSeconds,
-      done: false
-
+}
+
+/* SHOW MOTIVATIONAL TOAST */
+function showMotivation(index) {
+    const item = motivations[index];
+    toastIcon.textContent = item.icon;
+    toastMessage.textContent = item.text;
+    
+    toastNotification.classList.add("show");
+    setTimeout(() => {
+        toastNotification.classList.remove("show");
+    }, 3200);
+}
+
+/* CREATE NAVIGATION DOTS */
+cards.forEach((card, index) => {
+    const dot = document.createElement("div");
+    dot.classList.add("dot");
+    if (index === 0) dot.classList.add("active");
+    dot.addEventListener("click", () => {
+        if (index !== currentCardIndex && !isLoading) {
+            changePageTo(index);
+        }
     });
+    dotsContainer.appendChild(dot);
+});
 
-    saveTasks();
+const dots = document.querySelectorAll(".dot");
 
-    showTasks();
-
-    document.getElementById("taskName")
-      .value = "";
-
-    document.getElementById("taskHours")
-      .value = "0";
-
-    document.getElementById("taskMinutes")
-      .value = "0";
-
-  }
-
-
-  function formatDuration(hours, minutes) {
-
-    if (hours > 0 && minutes > 0) {
-
-      return hours +
-        " ساعة و" +
-        minutes +
-        " دقيقة";
-
-    }
-
-    if (hours > 0) {
-
-      return hours + " ساعة";
-
-    }
-
-    return minutes + " دقيقة";
-
-  }
-
-
-  function showTasks() {
-
-    const box =
-      document.getElementById("tasks");
-
-    if (!box) return;
-
-    if (tasks.length === 0) {
-
-      box.innerHTML = `
-        <p class="empty">
-          لم تضف أي مهام حتى الآن
-        </p>
-      `;
-
-      return;
-
-    }
-
-    box.innerHTML = "";
-
-    tasks.forEach(function(task, index) {
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        task.done
-          ? "task done"
-          : "task";
-
-      div.innerHTML = `
-
-        <div class="task-title">
-          ${escapeHTML(task.name)}
-        </div>
-
-        <div class="task-info">
-
-          النوع:
-          ${escapeHTML(task.type)}
-
-          <br>
-
-          المدة:
-          ${formatDuration(
-            task.hours,
-            task.minutes
-          )}
-
-        </div>
-
-        <div class="task-buttons">
-
-          <button
-            class="start"
-            onclick="startTimer(${index})">
-            ▶️ ابدأ المؤقت
-          </button>
-
-          <button
-            class="finish"
-            onclick="finishTask(${index})">
-            ✅ ${
-              task.done
-                ? "تم الإنجاز"
-                : "إنهاء"
-            }
-          </button>
-
-          <button
-            class="remove"
-            onclick="deleteTask(${index})">
-            🗑️ حذف
-          </button>
-
-        </div>
-      `;
-
-      box.appendChild(div);
-
+function updateUI() {
+    cards.forEach((card, index) => {
+        card.classList.toggle("active", index === currentCardIndex);
     });
-
-  }
-
-
-  /* =========================
-     المؤقت
-  ========================== */
-
-  function startTimer(index) {
-
-    clearInterval(timerInterval);
-
-    currentTaskIndex = index;
-
-    remainingSeconds =
-      tasks[index].totalSeconds;
-
-    timerRunning = true;
-
-    updateTimer();
-
-    timerInterval =
-      setInterval(function() {
-
-        if (remainingSeconds > 0) {
-
-          remainingSeconds--;
-
-          updateTimer();
-
-        }
-
-        if (remainingSeconds <= 0) {
-
-          clearInterval(timerInterval);
-
-          timerRunning = false;
-
-          alert(
-            "🎉 انتهى وقت المهمة:\n" +
-            tasks[index].name
-          );
-
-          finishTask(index);
-
-        }
-
-      }, 1000);
-
-  }
-
-
-  function pauseTimer() {
-
-    if (!timerRunning) return;
-
-    clearInterval(timerInterval);
-
-    timerRunning = false;
-
-  }
-
-
-  function resumeTimer() {
-
-    if (timerRunning) return;
-
-    if (remainingSeconds <= 0) {
-
-      alert(
-        "لا يوجد مؤقت متوقف لإعادة تشغيله"
-      );
-
-      return;
-
-    }
-
-    timerRunning = true;
-
-    timerInterval =
-      setInterval(function() {
-
-        if (remainingSeconds > 0) {
-
-          remainingSeconds--;
-
-          updateTimer();
-
-        }
-
-        if (remainingSeconds <= 0) {
-
-          clearInterval(timerInterval);
-
-          timerRunning = false;
-
-          if (
-            currentTaskIndex !== null
-          ) {
-
-            alert(
-              "🎉 انتهى وقت المهمة:\n" +
-              tasks[currentTaskIndex].name
-            );
-
-            finishTask(
-              currentTaskIndex
-            );
-
-          }
-
-        }
-
-      }, 1000);
-
-  }
-
-
-  function resetTimer() {
-
-    clearInterval(timerInterval);
-
-    remainingSeconds = 0;
-    timerRunning = false;
-    currentTaskIndex = null;
-
-    document.getElementById("timer")
-      .textContent = "00:00:00";
-
-  }
-
-
-  function updateTimer() {
-
-    const hours =
-      Math.floor(
-        remainingSeconds / 3600
-      );
-
-    const minutes =
-      Math.floor(
-        (remainingSeconds % 3600) / 60
-      );
-
-    const seconds =
-      remainingSeconds % 60;
-
-    document.getElementById("timer")
-      .textContent =
-
-      String(hours).padStart(2, "0") +
-      ":" +
-
-      String(minutes).padStart(2, "0") +
-      ":" +
-
-      String(seconds).padStart(2, "0");
-
-  }
-
-
-  function finishTask(index) {
-
-    if (!tasks[index]) return;
-
-    tasks[index].done = true;
-
-    saveTasks();
-
-    showTasks();
-
-  }
-
-
-  function deleteTask(index) {
-
-    const answer =
-      confirm(
-        "هل تريد حذف هذه المهمة؟"
-      );
-
-    if (!answer) return;
-
-    tasks.splice(index, 1);
-
-    saveTasks();
-
-    showTasks();
-
-  }
-
-
-  /* =========================
-     الروزنامة
-  ========================== */
-
-  function saveCalendarTasks() {
-
-    if (!username) return;
-
-    localStorage.setItem(
-      getCalendarStorageKey(),
-      JSON.stringify(calendarTasks)
-    );
-
-  }
-
-
-  function loadCalendarTasks() {
-
-    calendarTasks =
-      JSON.parse(
-        localStorage.getItem(
-          getCalendarStorageKey()
-        )
-      ) || [];
-
-  }
-
-
-  function dateKey(year, month, day) {
-
-    return (
-      year +
-      "-" +
-      String(month + 1).padStart(2, "0") +
-      "-" +
-      String(day).padStart(2, "0")
-    );
-
-  }
-
-
-  function formatArabicDate(date) {
-
-    return date.toLocaleDateString(
-      "ar-JO",
-      {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-      }
-    );
-
-  }
-
-
-  function renderCalendar() {
-
-    const grid =
-      document.getElementById(
-        "calendarGrid"
-      );
-
-    const title =
-      document.getElementById(
-        "monthTitle"
-      );
-
-    grid.innerHTML = "";
-
-    const year =
-      currentCalendarDate.getFullYear();
-
-    const month =
-      currentCalendarDate.getMonth();
-
-    const monthName =
-      currentCalendarDate.toLocaleDateString(
-        "ar-JO",
-        {
-          month: "long",
-          year: "numeric"
-        }
-      );
-
-    title.textContent = monthName;
-
-
-    const firstDay =
-      new Date(
-        year,
-        month,
-        1
-      ).getDay();
-
-    const daysInMonth =
-      new Date(
-        year,
-        month + 1,
-        0
-      ).getDate();
-
-
-    /* أيام فارغة قبل بداية الشهر */
-
-    for (
-      let i = 0;
-      i < firstDay;
-      i++
-    ) {
-
-      const empty =
-        document.createElement("div");
-
-      empty.className =
-        "calendar-day empty-day";
-
-      grid.appendChild(empty);
-
-    }
-
-
-    /* أيام الشهر */
-
-    const today =
-      new Date();
-
-    const todayKey =
-      dateKey(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
-      );
-
-
-    for (
-      let day = 1;
-      day <= daysInMonth;
-      day++
-    ) {
-
-      const key =
-        dateKey(
-          year,
-          month,
-          day
-        );
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        "calendar-day";
-
-      if (key === todayKey) {
-
-        div.classList.add("today");
-
-      }
-
-
-      div.onclick =
-        function() {
-
-          selectCalendarDate(
-            year,
-            month,
-            day
-          );
-
-        };
-
-
-      const dayNumber =
-        document.createElement("div");
-
-      dayNumber.className =
-        "day-number";
-
-      dayNumber.textContent =
-        day;
-
-
-      const taskBox =
-        document.createElement("div");
-
-      taskBox.className =
-        "day-tasks";
-
-
-      const dayTasks =
-        calendarTasks.filter(
-          function(task) {
-
-            return task.date === key;
-
-          }
-        );
-
-
-      dayTasks
-        .slice(0, 3)
-        .forEach(function(task) {
-
-          const taskElement =
-            document.createElement("div");
-
-          taskElement.className =
-            "calendar-task" +
-            (task.done
-              ? " done"
-              : "");
-
-          taskElement.textContent =
-            task.time
-              ? task.time +
-                " - " +
-                task.title
-              : task.title;
-
-          taskBox.appendChild(
-            taskElement
-          );
-
-        });
-
-
-      if (dayTasks.length > 3) {
-
-        const more =
-          document.createElement("div");
-
-        more.textContent =
-          "+" +
-          (dayTasks.length - 3) +
-          " أخرى";
-
-        more.style.marginTop = "3px";
-        more.style.color = "#64748b";
-
-        taskBox.appendChild(more);
-
-      }
-
-
-      div.appendChild(dayNumber);
-      div.appendChild(taskBox);
-
-      grid.appendChild(div);
-
-    }
-
-  }
-
-
-  function previousMonth() {
-
-    currentCalendarDate.setMonth(
-      currentCalendarDate.getMonth() - 1
-    );
-
-    renderCalendar();
-
-  }
-
-
-  function nextMonth() {
-
-    currentCalendarDate.setMonth(
-      currentCalendarDate.getMonth() + 1
-    );
-
-    renderCalendar();
-
-  }
-
-
-  function selectCalendarDate(
-    year,
-    month,
-    day
-  ) {
-
-    selectedDate =
-      dateKey(
-        year,
-        month,
-        day
-      );
-
-    const date =
-      new Date(
-        year,
-        month,
-        day
-      );
-
-    document.getElementById(
-      "selectedDate"
-    ).textContent =
-      "📅 " +
-      formatArabicDate(date);
-
-
-    document.getElementById(
-      "dateTaskForm"
-    ).classList.add("active");
-
-
-    document.getElementById(
-      "calendarTaskName"
-    ).focus();
-
-
-    showCalendarTasks();
-
-  }
-
-
-  function addCalendarTask() {
-
-    if (!selectedDate) {
-
-      alert("اختر يومًا أولاً");
-
-      return;
-
-    }
-
-
-    const title =
-      document.getElementById(
-        "calendarTaskName"
-      ).value.trim();
-
-    const time =
-      document.getElementById(
-        "calendarTaskTime"
-      ).value;
-
-    const note =
-      document.getElementById(
-        "calendarTaskNote"
-      ).value.trim();
-
-
-    if (!title) {
-
-      alert(
-        "اكتب اسم المهمة أو الموعد"
-      );
-
-      return;
-
-    }
-
-
-    calendarTasks.push({
-
-      id: Date.now(),
-
-      date: selectedDate,
-
-      title: title,
-
-      time: time,
-
-      note: note,
-
-      done: false
-
+    dots.forEach((dot, index) => {
+        dot.classList.toggle("active", index === currentCardIndex);
     });
+    prevBtn.disabled = currentCardIndex === 0;
+    nextBtn.disabled = currentCardIndex === cards.length - 1;
+    pageIndicator.textContent = `${currentCardIndex + 1} / ${cards.length}`;
 
+    // UPDATE PROGRESS BAR AND PERCENTAGE
+    const progressPercent = Math.round((currentCardIndex / (cards.length - 1)) * 100);
+    progressBarFill.style.width = `${progressPercent}%`;
+    progressStatus.textContent = `معدل الإنجاز: ${progressPercent}% 🎯`;
+}
 
-    saveCalendarTasks();
-
-    renderCalendar();
-
-    showCalendarTasks();
-
-
-    document.getElementById(
-      "calendarTaskName"
-    ).value = "";
-
-    document.getElementById(
-      "calendarTaskTime"
-    ).value = "";
-
-    document.getElementById(
-      "calendarTaskNote"
-    ).value = "";
-
-  }
-
-
-  function showCalendarTasks() {
-
-    const box =
-      document.getElementById(
-        "calendarTaskList"
-      );
-
-    if (!box) return;
-
-    if (!selectedDate) {
-
-      box.innerHTML = "";
-
-      return;
-
+function changePage(direction) {
+    if (isLoading) return;
+    
+    // Check password if trying to move forward from the start page
+    if (direction > 0 && currentCardIndex === 0 && !isAuthenticated) {
+        if (!checkPassword()) return;
     }
 
+    const target = currentCardIndex + direction;
+    if (target >= 0 && target < cards.length) {
+        changePageTo(target);
+    }
+}
 
-    const dayTasks =
-      calendarTasks.filter(
-        function(task) {
+function changePageTo(target) {
+    if (isLoading || target < 0 || target >= cards.length || target === currentCardIndex) return;
 
-          return task.date === selectedDate;
-
-        }
-      );
-
-
-    if (dayTasks.length === 0) {
-
-      box.innerHTML = `
-        <p class="empty">
-          لا توجد مهام في هذا اليوم.
-        </p>
-      `;
-
-      return;
-
+    // Check password if navigating away from home page
+    if (currentCardIndex === 0 && target > 0 && !isAuthenticated) {
+        if (!checkPassword()) return;
     }
 
+    isLoading = true;
+    document.body.classList.add("loading");
+    loadingScreen.classList.add("show");
 
-    box.innerHTML = `
-      <h3 style="margin-bottom:8px;">
-        مهام هذا اليوم
-      </h3>
-    `;
+    loadingProgress.style.animation = "none";
+    void loadingProgress.offsetWidth;
+    loadingProgress.style.animation = "loadingProgress 0.75s ease forwards";
 
+    let dotCount = 1;
+    const dotsInterval = setInterval(() => {
+        dotCount++;
+        if (dotCount > 3) dotCount = 1;
+        loadingDots.textContent = ".".repeat(dotCount);
+    }, 180);
 
-    dayTasks.forEach(
-      function(task) {
+    setTimeout(() => {
+        cards[currentCardIndex].classList.remove("active");
+        currentCardIndex = target;
+        updateUI();
+        showMotivation(currentCardIndex);
+    }, 430);
 
-        const div =
-          document.createElement("div");
+    setTimeout(() => {
+        clearInterval(dotsInterval);
+        loadingScreen.classList.remove("show");
+        document.body.classList.remove("loading");
+        isLoading = false;
+    }, 780);
+}
 
-        div.className =
-          "calendar-event";
+/* MAIN MATRIX BACKGROUND */
+const matrixCanvas = document.getElementById("matrixBackground");
+const ctx = matrixCanvas.getContext("2d");
+let fontSize = 15;
+let columns, drops;
 
+function resizeMatrix() {
+    matrixCanvas.width = window.innerWidth;
+    matrixCanvas.height = window.innerHeight;
+    columns = Math.floor(matrixCanvas.width / fontSize);
+    drops = Array(columns).fill(1);
+}
 
-        div.innerHTML = `
+resizeMatrix();
+window.addEventListener("resize", resizeMatrix);
 
-          <div class="calendar-event-title">
-            ${escapeHTML(task.title)}
-          </div>
+const matrixChars = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&@<>";
 
-          ${
-            task.time
-              ? `
-                <div class="calendar-event-info">
-                  ⏰ ${escapeHTML(task.time)}
-                </div>
-              `
-              : ""
-          }
+function drawMatrix() {
+    ctx.fillStyle = "rgba(2,9,20,0.13)";
+    ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+    ctx.fillStyle = "#00c8ff";
+    ctx.font = fontSize + "px monospace";
 
-          ${
-            task.note
-              ? `
-                <div class="calendar-event-info">
-                  📝 ${escapeHTML(task.note)}
-                </div>
-              `
-              : ""
-          }
-
-          <div class="event-buttons">
-
-            <button
-              class="event-done"
-              onclick="toggleCalendarTask(${task.id})">
-              ${
-                task.done
-                  ? "↩️ غير مكتملة"
-                  : "✅ مكتملة"
-              }
-            </button>
-
-            <button
-              class="event-delete"
-              onclick="deleteCalendarTask(${task.id})">
-              🗑️ حذف
-            </button>
-
-          </div>
-
-        `;
-
-        box.appendChild(div);
-
-      }
-    );
-
-  }
-
-
-  function toggleCalendarTask(id) {
-
-    const task =
-      calendarTasks.find(
-        function(item) {
-
-          return item.id === id;
-
+    for (let i = 0; i < drops.length; i++) {
+        const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
         }
-      );
+        drops[i]++;
+    }
+}
+setInterval(drawMatrix, 45);
 
-    if (!task) return;
+/* LOADING MATRIX BACKGROUND */
+const loadingCanvas = document.getElementById("loadingMatrix");
+const loadingCtx = loadingCanvas.getContext("2d");
+let loadingFontSize = 16;
+let loadingColumns, loadingDrops;
 
-    task.done =
-      !task.done;
+function resizeLoadingMatrix() {
+    loadingCanvas.width = window.innerWidth;
+    loadingCanvas.height = window.innerHeight;
+    loadingColumns = Math.floor(loadingCanvas.width / loadingFontSize);
+    loadingDrops = Array(loadingColumns).fill(1);
+}
 
-    saveCalendarTasks();
+resizeLoadingMatrix();
+window.addEventListener("resize", resizeLoadingMatrix);
 
-    renderCalendar();
+function drawLoadingMatrix() {
+    loadingCtx.fillStyle = "rgba(2,9,20,0.16)";
+    loadingCtx.fillRect(0, 0, loadingCanvas.width, loadingCanvas.height);
+    loadingCtx.fillStyle = "#00e5ff";
+    loadingCtx.font = loadingFontSize + "px monospace";
 
-    showCalendarTasks();
-
-  }
-
-
-  function deleteCalendarTask(id) {
-
-    const answer =
-      confirm(
-        "هل تريد حذف هذا الموعد؟"
-      );
-
-    if (!answer) return;
-
-
-    calendarTasks =
-      calendarTasks.filter(
-        function(task) {
-
-          return task.id !== id;
-
+    for (let i = 0; i < loadingDrops.length; i++) {
+        const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+        loadingCtx.fillText(text, i * loadingFontSize, loadingDrops[i] * loadingFontSize);
+        if (loadingDrops[i] * loadingFontSize > loadingCanvas.height && Math.random() > 0.94) {
+            loadingDrops[i] = 0;
         }
-      );
+        loadingDrops[i]++;
+    }
+}
+setInterval(drawLoadingMatrix, 40);
 
-
-    saveCalendarTasks();
-
-    renderCalendar();
-
-    showCalendarTasks();
-
-  }
-
-
-  /* =========================
-     حماية عرض النصوص
-  ========================== */
-
-  function escapeHTML(text) {
-
-    return String(text)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-
-  }
-
+updateUI();
 </script>
-
 </body>
 </html>
